@@ -97,7 +97,7 @@ object MarinaOLoughlinReviewParser extends RestaurantReviewerBasedParser[MarinaO
     maybeAddress.map(elem => WebAddress(elem.attr("href")))
   }
 
-  def guesstRatingBreakdown(articleBody: ArticleBody): Option[RatingBreakdown] = {
+  def guessRatingBreakdown(articleBody: ArticleBody): Option[RatingBreakdown] = {
     val FoodLabel = "Food".toLowerCase
     val AtmosphereLabel = "Atmosphere".toLowerCase
     val ValueForMoneyLabel = "Value for money".toLowerCase

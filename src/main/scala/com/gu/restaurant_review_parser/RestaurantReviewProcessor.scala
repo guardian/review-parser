@@ -55,7 +55,7 @@ object RestaurantReviewProcessor {
 
       val maybeRatingBreakdown = for {
           body <- article.body
-          ratingBreakdown <- extractor.guesstRatingBreakdown(ArticleBody(body))
+          ratingBreakdown <- extractor.guessRatingBreakdown(ArticleBody(body))
         } yield ratingBreakdown
 
       val maybeWebAddress = for {
