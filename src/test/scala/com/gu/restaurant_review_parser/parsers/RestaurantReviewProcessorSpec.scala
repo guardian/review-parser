@@ -3,8 +3,10 @@ package com.gu.restaurant_review_parser.parsers
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoField
 
+import com.google.maps.model._
 import com.gu.contentapi.client.model.v1.CapiDateTime
 import com.gu.restaurant_review_parser._
+import com.gu.restaurant_review_parser.parsers.geocoding.TestGeocodingResultCreator._
 import org.scalatest._
 
 class RestaurantReviewProcessorSpec extends FunSuite with Matchers {
@@ -22,9 +24,26 @@ class RestaurantReviewProcessorSpec extends FunSuite with Matchers {
       )
     )
 
+    val geoResult = Array(geocodingResult(
+      formattedAddress = "131 Upper St, Islington, London N1, UK",
+      lat = 51.5390429,
+      lng = -0.1026274,
+      addressComponents = Array(
+        addressComponent("131", "131", Array(AddressComponentType.STREET_NUMBER)),
+        addressComponent("Upper Street", "Upper St", Array(AddressComponentType.ROUTE)),
+        addressComponent("Islington", "Islington", Array(AddressComponentType.NEIGHBORHOOD)),
+        addressComponent("London", "London", Array(AddressComponentType.LOCALITY)),
+        addressComponent("N1", "N1", Array(AddressComponentType.POSTAL_CODE)),
+        addressComponent("London", "London", Array(AddressComponentType.POSTAL_TOWN)),
+        addressComponent("United Kingdom", "GB", Array(AddressComponentType.COUNTRY)),
+        addressComponent("England", "England", Array(AddressComponentType.ADMINISTRATIVE_AREA_LEVEL_1)),
+        addressComponent("Greater London", "Greater London", Array(AddressComponentType.ADMINISTRATIVE_AREA_LEVEL_2))
+      )
+    ))
+
     import com.gu.restaurant_review_parser.parsers.Parser
 
-    val parsedRestaurantReviews = RestaurantReviewProcessor.processPage[MarinaOLoughlinReviewArticle](articles)
+    val parsedRestaurantReviews = RestaurantReviewProcessor.processPage[MarinaOLoughlinReviewArticle](articles, (_ :String) => geoResult)
     parsedRestaurantReviews shouldNot be(empty)
     parsedRestaurantReviews.foreach { review =>
 
@@ -32,12 +51,13 @@ class RestaurantReviewProcessorSpec extends FunSuite with Matchers {
       review.webAddress shouldBe Some(WebAddress("http://john-salt.com/"))
       review.ratingBreakdown shouldBe Some(RatingBreakdown(FoodRating("7/10"), AtmosphereRating("6/10"), ValueForMoneyRating("8/10")))
       review.publicationDate shouldBe OffsetDateTime.parse(webPublicatioDate)
-      review.address shouldBe Some(Address("131 Upper Street, London N1, 020-7704 8955. Open dinner, Tue-Sat, 6-10pm; Sat brunch, 10am-3pm; Sun lunch noon-4pm. Set menus: four-course, £28, eight £56, 12 £85, plus drinks and service."))
+      review.address shouldBe Some(FormattedAddress("131 Upper Street, London N1, 020-7704 8955"))
+      review.addressInformation shouldBe Some(AddressInformation(AddressParts(Some(StreetNumber("131")),Some(Route("Upper Street")),Some(Neighborhood("Islington")),Some(Locality("London")),Some(PostalCode("N1")),Some(PostalTown("London")),Some(Country("United Kingdom")),Some(AdministrativeAreaLevelOne("England")),Some(AdministrativeAreaLevelTwo("Greater London"))),Location(51.5390429,-0.1026274)))
+      review.restaurantInformation shouldBe Some(RestaurantInformation("Open dinner, Tue-Sat, 6-10pm; Sat brunch, 10am-3pm; Sun lunch noon-4pm. Set menus: four-course, £28, eight £56, 12 £85, plus drinks and service."))
       review.approximateLocation shouldBe ApproximateLocation("London N1")
       review.reviewer shouldBe "Marina O'Loughlin"
 
     }
-
 
   }
 

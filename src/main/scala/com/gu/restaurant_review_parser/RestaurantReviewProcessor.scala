@@ -1,8 +1,9 @@
 package com.gu.restaurant_review_parser
 
+import com.google.maps.model.{GeocodingResult}
 import com.gu.contentapi.client.GuardianContentClient
 import com.gu.contentapi.client.model.v1.SearchResponse
-import com.gu.restaurant_review_parser.parsers.Parser.{RestaurantReviewerBasedParser}
+import com.gu.restaurant_review_parser.parsers.Parser.RestaurantReviewerBasedParser
 
 import scala.concurrent.duration._
 import scala.concurrent.Await
@@ -11,7 +12,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object RestaurantReviewProcessor {
 
-  def processRestaurantReviews(pages: Seq[Int], reviewer: Reviewer, capiClient: GuardianContentClient): Seq[ParsedRestaurantReview] = {
+  def processRestaurantReviews(pages: Seq[Int], reviewer: Reviewer, capiClient: GuardianContentClient, geocodeFn: String => Array[GeocodingResult]): Seq[ParsedRestaurantReview] = {
 
     def process(tryResponse: Try[SearchResponse], page: Int): Seq[ParsedRestaurantReview] = {
 
@@ -26,7 +27,7 @@ object RestaurantReviewProcessor {
               .filterNot(article => reviewer.excludedArticles.contains(article.id))
 
           reviewer match {
-            case MarinaOLoughlin => processPage[MarinaOLoughlinReviewArticle](reviewArticles)
+            case MarinaOLoughlin => processPage[MarinaOLoughlinReviewArticle](reviewArticles, geocodeFn)
             case _ =>
               println(s"Reviewer: ${reviewer.toString} could not be determined. Failed to parse any reviews.")
               Nil
@@ -46,41 +47,55 @@ object RestaurantReviewProcessor {
     }
   }
 
-  def processPage[T <: ReviewArticle](reviewArticles: Seq[ReviewArticle])(implicit extractor: RestaurantReviewerBasedParser[T]): Seq[ParsedRestaurantReview] = {
-    reviewArticles.map { article =>
-      println(s"Processing content ${article.id}")
+  def processPage[T <: ReviewArticle](reviewArticles: Seq[ReviewArticle], geocode: String => Array[GeocodingResult])(implicit extractor: RestaurantReviewerBasedParser[T]): Seq[ParsedRestaurantReview] = reviewArticles.map { article =>
+    println(s"Processing content ${article.id}")
 
-      val webTitle = WebTitle(article.webTitle)
-      val (name: RestaurantName, approxLocation: ApproximateLocation) = extractor.guessRestaurantNameAndApproximateLocation(webTitle)
+    val webTitle = WebTitle(article.webTitle)
+    val (name: RestaurantName, approxLocation: ApproximateLocation) = extractor.guessRestaurantNameAndApproximateLocation(webTitle)
 
-      val maybeRatingBreakdown = for {
-          body <- article.body
-          ratingBreakdown <- extractor.guessRatingBreakdown(ArticleBody(body))
-        } yield ratingBreakdown
+    val maybeRatingBreakdown = for {
+        body <- article.body
+        ratingBreakdown <- extractor.guessRatingBreakdown(ArticleBody(body))
+      } yield ratingBreakdown
 
-      val maybeWebAddress = for {
-          body <- article.body
-          webAddress <- extractor.guessRestaurantWebAddress(ArticleBody(body), name)
-        } yield webAddress
+    val maybeWebAddress = for {
+        body <- article.body
+        webAddress <- extractor.guessRestaurantWebAddress(ArticleBody(body), name)
+      } yield webAddress
 
-      val maybeAddress = for {
-          body <- article.body
-          address <- extractor.guessAddressInformation(ArticleBody(body), name)
-      } yield address
+    val maybeAddress = for {
+        body <- article.body
+        address <- extractor.guessFormattedAddress(ArticleBody(body), name)
+    } yield address
 
-      val parsedRestaurantReview = ParsedRestaurantReview (
-        restaurantName = name,
-        approximateLocation = approxLocation,
-        reviewer = extractor.reviewer(article.byline),
-        publicationDate = extractor.publicationDate(article.webPublicationDate),
-        ratingBreakdown = maybeRatingBreakdown,
-        address = maybeAddress,
-        webAddress = maybeWebAddress
-      )
+    val maybeRestaurantInformation = for {
+      body <- article.body
+      restaurantInformation <- extractor.guessRestaurantInformation(ArticleBody(body), name)
+    } yield restaurantInformation
 
-      println(parsedRestaurantReview.toString)
-      parsedRestaurantReview
+    val maybeAddressInformation: Option[AddressInformation] = maybeAddress.flatMap { addr =>
+      Try(geocode(addr.value)(0)).toOption.flatMap { geoResult =>
+          val maybeAddressParts = AddressParts(geoResult.addressComponents)
+          val location = Location(geoResult.geometry.location.lat, geoResult.geometry.location.lng)
+          maybeAddressParts.map(AddressInformation(_, location))
+        }
     }
+
+    val parsedRestaurantReview = ParsedRestaurantReview (
+      restaurantName = name,
+      approximateLocation = approxLocation,
+      reviewer = extractor.reviewer(article.byline),
+      publicationDate = extractor.publicationDate(article.webPublicationDate),
+      ratingBreakdown = maybeRatingBreakdown,
+      address = maybeAddress,
+      addressInformation = maybeAddressInformation,
+      restaurantInformation = maybeRestaurantInformation,
+      webAddress = maybeWebAddress
+    )
+
+    println(parsedRestaurantReview.toString)
+
+    parsedRestaurantReview
   }
 
 }

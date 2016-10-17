@@ -3,7 +3,7 @@ package com.gu.restaurant_review_parser.parsers
 import com.gu.restaurant_review_parser._
 import com.gu.restaurant_review_parser.parsers.Parser.RestaurantReviewerBasedParser
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
+import org.jsoup.nodes.{Element}
 import com.gu.restaurant_review_parser.parsers.Delimiters._
 import com.gu.restaurant_review_parser.ParsedRestaurantReview._
 
@@ -131,29 +131,41 @@ object MarinaOLoughlinReviewParser extends RestaurantReviewerBasedParser[MarinaO
     }
   }
 
-  def guessAddressInformation(articleBody: ArticleBody, restaurantName: RestaurantName): Option[Address] = {
+  def guessFormattedAddress(articleBody: ArticleBody, restaurantName: RestaurantName): Option[FormattedAddress] = {
+    getAddressBlockText(articleBody, restaurantName).flatMap { addressBlockText =>
+      addressBlockText.split(DotSpaceDelimiter, 2).headOption.map(FormattedAddress)
+    }
+  }
+
+  def guessRestaurantInformation(articleBody: ArticleBody, restaurantName: RestaurantName): Option[RestaurantInformation] = {
+    getAddressBlockText(articleBody, restaurantName).flatMap { addressBlockText =>
+      addressBlockText.split(DotSpaceDelimiter, 2).lastOption.map(RestaurantInformation)
+    }
+  }
+
+  private def getAddressBlockText(articleBody: ArticleBody, restaurantName: RestaurantName): Option[String] = {
 
     def sanitize(input: String): String = input.stripPrefix("•").stripPrefix(".").replaceFirst(",", "").trim
 
     val doc = Jsoup.parse(articleBody.value)
 
-    val maybeAddress = doc.select("a").iterator().asScala.toList
+    val maybeElementContainingAddress = doc.select("a").iterator().asScala.toList
       .filter(e => e.text.toLowerCase.contains(restaurantName.value.toLowerCase)).lastOption // assume the one we want is always the last one.
 
-    maybeAddress.map { ma =>
+    maybeElementContainingAddress.map { ma =>
       val nextSibling = ma.nextSibling()
-      if (nextSibling.toString.contains("<strong>")) {
-        Address(sanitize(nextSibling.nextSibling().toString))
-      } else Address(sanitize(nextSibling.toString))
+      if (nextSibling.toString.contains("<strong>")) sanitize(nextSibling.nextSibling.toString) else sanitize(nextSibling.toString)
 
     } orElse {
       doc.select("p").iterator().asScala.toList
         .filter(e => e.text.contains(restaurantName.value)).lastOption
         .map { element =>
-          val address = element.text.replace(restaurantName.value, "")
-          Address(sanitize(address))
+          val text = element.text.replace(restaurantName.value, "")
+          sanitize(text)
         }
     }
+
   }
+
 
 }
