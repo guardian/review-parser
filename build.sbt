@@ -9,6 +9,7 @@ resolvers += "Guardian GitHub Repository" at "http://guardian.github.io/maven/re
 libraryDependencies ++= Seq(
   "org.jsoup" % "jsoup" % "1.9.2",
   "com.gu" %% "content-api-client" % "10.2",
+  "com.google.maps" % "google-maps-services" % "0.1.16",
   "org.scalatest" %% "scalatest" % "2.2.6" % Test
 )
 

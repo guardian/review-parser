@@ -11,7 +11,8 @@ object Parser {
     def reviewer(byline: Option[String]) =  byline.getOrElse("REVIEWER UNKNOWN")
     def publicationDate(webPublicationDate: Option[CapiDateTime]) = webPublicationDate.map(time => OffsetDateTime.parse(time.iso8601)).getOrElse(OffsetDateTime.now)
     def guessRestaurantWebAddress(articleBody: ArticleBody, restaurantName: RestaurantName): Option[WebAddress]
-    def guessAddressInformation(articleBody: ArticleBody, restaurantName: RestaurantName): Option[Address]
+    def guessFormattedAddress(articleBody: ArticleBody, restaurantName: RestaurantName): Option[FormattedAddress]
+    def guessRestaurantInformation(articleBody: ArticleBody, restaurantName: RestaurantName): Option[RestaurantInformation]
     def guessRatingBreakdown(articleBody: ArticleBody): Option[RatingBreakdown]
     def guessRestaurantNameAndApproximateLocation(webTitle: WebTitle): (RestaurantName, ApproximateLocation)
 
