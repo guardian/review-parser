@@ -33,12 +33,12 @@ object ETL extends App {
   val capiClient = new GuardianContentClient(capiKey)
   val geoApiContext: GeoApiContext = new GeoApiContext().setApiKey(googleGeoCodingApiKey)
   val geocodeFn: String => Array[GeocodingResult] = Geocoder.geocode(geoApiContext)
-  val geocodeFnStop: String => Array[GeocodingResult] = (_: String) => Array.empty[GeocodingResult]
+  // val geocodeFnStop: String => Array[GeocodingResult] = (_: String) => Array.empty[GeocodingResult] // used for local development to prevent getting rate limited.
 
   try {
     val firstPage = Await.result(capiClient.getResponse(reviewer.query), 5.seconds)
     val pages = 1 to firstPage.pages
-    RestaurantReviewProcessor.processRestaurantReviews(pages, reviewer, capiClient, geocodeFnStop)
+    RestaurantReviewProcessor.processRestaurantReviews(pages, reviewer, capiClient, geocodeFn)
     println(s"Finished!")
   } finally {
     capiClient.shutdown()

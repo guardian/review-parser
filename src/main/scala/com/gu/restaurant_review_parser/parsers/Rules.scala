@@ -16,9 +16,6 @@ object Rules {
 
       val maybeJunkTextSeparator: Option[String] = rule.junkTextSeparator.collectFirst { case sep if webTitle.value.contains(sep) => sep }
 
-      println("in here")
-      println("FOO + " + maybeJunkTextSeparator)
-
       maybeJunkTextSeparator match {
         case Some(separator) =>
             val items = webTitle.value.split(escape(separator), 2).toSeq
