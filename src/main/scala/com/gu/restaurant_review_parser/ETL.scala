@@ -15,6 +15,7 @@ object ETL extends App {
     Console.err.println("Usage: <capi key> <google-geocoding-api-key> <reviewer>")
     Console.err.println("Reviewers supported:")
     Console.err.println("Marina O'Loughlin :- type MARINA")
+    Console.err.println("Jay Rayner :- type JAY")
     sys.exit(1)
   }
 
@@ -22,8 +23,9 @@ object ETL extends App {
   val googleGeoCodingApiKey: String = args(1)
   val reviewer: Reviewer = args(2) match {
     case "MARINA" => MarinaOLoughlin
+    case "JAY" => JayRayner
     case _ =>  {
-      Console.err.println("reviewer must be one of: [ MARINA ]")
+      Console.err.println("reviewer must be one of: [ MARINA, JAY ]")
       sys.exit(1)
     }
   }
@@ -31,11 +33,12 @@ object ETL extends App {
   val capiClient = new GuardianContentClient(capiKey)
   val geoApiContext: GeoApiContext = new GeoApiContext().setApiKey(googleGeoCodingApiKey)
   val geocodeFn: String => Array[GeocodingResult] = Geocoder.geocode(geoApiContext)
+  val geocodeFnStop: String => Array[GeocodingResult] = (_: String) => Array.empty[GeocodingResult]
 
   try {
     val firstPage = Await.result(capiClient.getResponse(reviewer.query), 5.seconds)
     val pages = 1 to firstPage.pages
-    RestaurantReviewProcessor.processRestaurantReviews(pages, reviewer, capiClient, geocodeFn)
+    RestaurantReviewProcessor.processRestaurantReviews(pages, reviewer, capiClient, geocodeFnStop)
     println(s"Finished!")
   } finally {
     capiClient.shutdown()

@@ -3,9 +3,9 @@ package com.gu.restaurant_review_parser.parsers
 object Delimiters {
 
   val CommaDelimiter = ","
-  val PipeDelimiterWithSpaces = "\\s\\|\\s"
+  val PipeDelimiterWithSpaces = " | "
   val ColonDelimiter = ":"
-  val HyphenDelimiterWithSpaces = "\\s–\\s"
+  val HyphenDelimiterWithSpaces = " – "
   val DotSpaceDelimiter = "\\.\\s"
 
 }

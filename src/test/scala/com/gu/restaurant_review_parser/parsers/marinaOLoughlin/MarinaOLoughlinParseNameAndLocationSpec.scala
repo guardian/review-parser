@@ -37,7 +37,7 @@ class MarinaOLoughlinParseNameAndLocationSpec extends FlatSpec with Matchers {
 
     val webTitle = WebTitle("Restaurant Ours, London: ‘not my idea of fun’ – restaurant review")
     val (restaurantName, approxLocation) = MarinaOLoughlinReviewParser.guessRestaurantNameAndApproximateLocation(webTitle)
-    restaurantName.value shouldBe "Ours"
+    restaurantName.value shouldBe "Restaurant Ours"
     approxLocation.value shouldBe "London"
   }
 
@@ -52,7 +52,7 @@ class MarinaOLoughlinParseNameAndLocationSpec extends FlatSpec with Matchers {
     val webTitle = WebTitle("The Croft Kitchen, Biggleswade, Bedfordshire – restaurant review")
     val (restaurantName, approxLocation) = MarinaOLoughlinReviewParser.guessRestaurantNameAndApproximateLocation(webTitle)
     restaurantName.value shouldBe "The Croft Kitchen"
-    approxLocation.value shouldBe "Biggleswade"
+    approxLocation.value shouldBe "Biggleswade, Bedfordshire"
   }
 
   it should "extract restaurant name and approximate location when web title meets none of the prefix rules and seperator is a colon" in {
@@ -70,5 +70,12 @@ class MarinaOLoughlinParseNameAndLocationSpec extends FlatSpec with Matchers {
     approxLocation.value shouldBe NoApproximateLocation
   }
 
+  it should "Bronte, London WC2: ‘It doesn’t know whether it’s in Bangkok or Beirut, nor does it much care’ – restaurant review | Marina O’Loughlin" in {
+
+    val webTitle = WebTitle("Bronte, London WC2: ‘It doesn’t know whether it’s in Bangkok or Beirut, nor does it much care’ – restaurant review | Marina O'Loughlin")
+    val (restaurantName, approxLocation) = MarinaOLoughlinReviewParser.guessRestaurantNameAndApproximateLocation(webTitle)
+    restaurantName.value shouldBe "Bronte"
+    approxLocation.value shouldBe "London WC2"
+  }
 
 }
