@@ -19,7 +19,7 @@ class RestaurantReviewProcessorSpec extends FunSuite with Matchers {
         id = "lifeandstyle/2012/dec/07/john-salt-london-restaurant-review",
         webTitle = "Restaurant: John Salt, London N1",
         byline = Some("Marina O'Loughlin"),
-        body = Some(TestUtils.resourceToString("articles/lifeandstyle-2012-dec-07-john-salt-london-restaurant-review.txt")),
+        body = Some(TestUtils.resourceToString("articles/marinaOLoughlin/lifeandstyle-2012-dec-07-john-salt-london-restaurant-review.txt")),
         webPublicationDate = Some(CapiDateTime(OffsetDateTime.parse(webPublicatioDate).get(ChronoField.MILLI_OF_SECOND), webPublicatioDate))
       )
     )

@@ -28,6 +28,7 @@ object RestaurantReviewProcessor {
 
           reviewer match {
             case MarinaOLoughlin => processPage[MarinaOLoughlinReviewArticle](reviewArticles, geocodeFn)
+            case JayRayner => processPage[JayRaynerReviewArticle](reviewArticles, geocodeFn)
             case _ =>
               println(s"Reviewer: ${reviewer.toString} could not be determined. Failed to parse any reviews.")
               Nil
@@ -84,7 +85,7 @@ object RestaurantReviewProcessor {
     val parsedRestaurantReview = ParsedRestaurantReview (
       restaurantName = name,
       approximateLocation = approxLocation,
-      reviewer = extractor.reviewer(article.byline),
+      reviewer = extractor.reviewer,
       publicationDate = extractor.publicationDate(article.webPublicationDate),
       ratingBreakdown = maybeRatingBreakdown,
       address = maybeAddress,

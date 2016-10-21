@@ -3,87 +3,43 @@ package com.gu.restaurant_review_parser.parsers
 import com.gu.restaurant_review_parser._
 import com.gu.restaurant_review_parser.parsers.Parser.RestaurantReviewerBasedParser
 import org.jsoup.Jsoup
-import org.jsoup.nodes.{Element}
+import org.jsoup.nodes.Element
 import com.gu.restaurant_review_parser.parsers.Delimiters._
 import com.gu.restaurant_review_parser.ParsedRestaurantReview._
-
-import scala.annotation.tailrec
-import scala.util.Try
+import com.gu.restaurant_review_parser.parsers.Rules.{PrefixRule, Rule, SuffixRule}
 import scala.collection.JavaConverters._
 
 object MarinaOLoughlinReviewParser extends RestaurantReviewerBasedParser[MarinaOLoughlinReviewArticle] {
 
-  case class PrefixRule(webTitlePrefix: String, restaurantNameAndLocationSeperator: String, locationAndGarbageSeperator: String)
-  object PrefixRule {
-    def checkPrefixMatches(webTitle: WebTitle, rule: PrefixRule): Option[PrefixRule] = if (webTitle.value.startsWith(rule.webTitlePrefix)) Some(rule) else None
-
-    def applyRule(webTitle: WebTitle, rule: PrefixRule): (RestaurantName, ApproximateLocation) = {
-      val items = webTitle.value.replace(rule.webTitlePrefix, "").split(rule.restaurantNameAndLocationSeperator).take(2).map(_.trim).toSeq
-      val name = items.headOption.getOrElse(NoRestaurantName)
-      val location = if (items.headOption == items.lastOption) NoApproximateLocation else items.lastOption.flatMap(_.split(rule.locationAndGarbageSeperator).headOption).getOrElse(NoApproximateLocation)
-      (RestaurantName(name.trim), ApproximateLocation(location.trim))
-    }
-  }
+  val reviewer: String = "Marina O'Loughlin"
 
   def guessRestaurantNameAndApproximateLocation(webTitle: WebTitle): (RestaurantName, ApproximateLocation) = {
 
-    def guessRestaurantName(webTitle: WebTitle): RestaurantName = {
+    val rules: Seq[Rule] = {
+      val prefixRules: Seq[PrefixRule] = Seq(
+        PrefixRule(webTitlePrefix = "Restaurant review:", junkTextSeparator = ColonDelimiter, restaurantNameAndLocationSeparator = Seq(CommaDelimiter)),
+        PrefixRule(webTitlePrefix = "Restaurants:", junkTextSeparator = ColonDelimiter, restaurantNameAndLocationSeparator = Seq(CommaDelimiter)),
+        PrefixRule(webTitlePrefix = "Restaurant:", junkTextSeparator = ColonDelimiter, restaurantNameAndLocationSeparator = Seq(CommaDelimiter)))
 
-      @tailrec
-      def exec(webTitle: WebTitle, delimiters: Seq[String]): String = {
-        val items = delimiters.headOption.map(delimiter => webTitle.value.split(delimiter)).getOrElse(Array.empty)
-        if (items.isEmpty) // tried all delimiters without success - can't parse restaurant name
-          NoRestaurantName
-        else if (items.length == 1) // try another delimiter
-          exec(webTitle, delimiters.tail)
-        else items(0).replace("review", "").trim // think we've found it - make sure it doesn't contain the word 'review'.
-      }
+      val suffixRules: Seq[SuffixRule] = Seq(
+        SuffixRule(webTitleSuffix = "restaurant review | Marina O'Loughlin", junkTextSeparator = Seq(ColonDelimiter, HyphenDelimiterWithSpaces), restaurantNameAndLocationSeparator = CommaDelimiter),
+        SuffixRule(webTitleSuffix = "– restaurant review", junkTextSeparator = Seq(ColonDelimiter, HyphenDelimiterWithSpaces), restaurantNameAndLocationSeparator = CommaDelimiter)
+      )
 
-      val restaurantName = exec(webTitle, Seq(CommaDelimiter, ColonDelimiter, HyphenDelimiterWithSpaces))
-      RestaurantName(restaurantName.trim)
+      prefixRules ++ suffixRules
     }
 
-    def guessLocation(webTitle: WebTitle): ApproximateLocation = {
-
-      @tailrec
-      def exec(webTitle: WebTitle, delimiters: Seq[String]): String = {
-        val items = webTitle.value.split(CommaDelimiter)
-
-        if (items.length > 2) { // probably formatted like: The Riz, Margate, Kent – restaurant review
-          items(1).trim
-        } else {
-          val itemsForLocation = delimiters.headOption.flatMap(delimiter => Try(items(1).split(delimiter)).toOption).getOrElse(Array.empty)
-
-          if (itemsForLocation.length > 1) {
-            val approximateLocation = itemsForLocation.headOption.getOrElse(NoApproximateLocation)
-            approximateLocation
-          } else if (delimiters.tail.nonEmpty) {
-            exec(webTitle, delimiters.tail)
-          } else {
-            NoApproximateLocation
-          }
-        }
-
-      }
-
-      val delimiters: Seq[String] = if (!webTitle.value.contains(ColonDelimiter)) Seq(HyphenDelimiterWithSpaces) else Seq(ColonDelimiter, HyphenDelimiterWithSpaces)
-      val approximateLocation = exec(webTitle, delimiters)
-      ApproximateLocation(approximateLocation.trim)
+    val maybeRuleToApply: Option[Rule] = rules.collectFirst {
+      case rule: PrefixRule if PrefixRule.checkPrefixMatches(webTitle, rule).isDefined => rule
+      case rule: SuffixRule if SuffixRule.checkSuffixMatches(webTitle, rule).isDefined => rule
     }
 
-    val prefixRules: Seq[PrefixRule] = Seq(
-      PrefixRule(webTitlePrefix = "Restaurant review:", restaurantNameAndLocationSeperator = CommaDelimiter, locationAndGarbageSeperator = PipeDelimiterWithSpaces),
-      PrefixRule(webTitlePrefix = "Restaurants:", restaurantNameAndLocationSeperator = CommaDelimiter, locationAndGarbageSeperator = PipeDelimiterWithSpaces),
-      PrefixRule(webTitlePrefix = "Restaurant:", restaurantNameAndLocationSeperator = CommaDelimiter, locationAndGarbageSeperator = PipeDelimiterWithSpaces),
-      PrefixRule(webTitlePrefix = "Restaurant ", restaurantNameAndLocationSeperator = CommaDelimiter, locationAndGarbageSeperator = ColonDelimiter)
-    )
-
-    val maybeRuleToApply: Option[PrefixRule] = prefixRules.collectFirst { case rule if PrefixRule.checkPrefixMatches(webTitle, rule).isDefined => rule }
-
-    maybeRuleToApply.map(PrefixRule.applyRule(webTitle, _)).getOrElse {
-      val name = guessRestaurantName(webTitle)
-      val approxLocation = guessLocation(webTitle)
-      (name, approxLocation)
+    maybeRuleToApply.map {
+      case rule: PrefixRule => PrefixRule.applyRule(webTitle, rule)
+      case rule: SuffixRule => SuffixRule.applyRule(webTitle, rule)
+    }
+      .getOrElse {
+      (RestaurantName(NoRestaurantName), ApproximateLocation(NoApproximateLocation))
     }
 
   }

@@ -23,6 +23,20 @@ case object MarinaOLoughlin extends Reviewer {
   )
 }
 
+case object JayRayner extends Reviewer {
+  val query: SearchQuery = SearchQuery()
+    .pageSize(200)
+    .contentType("article")
+    .tag("lifeandstyle/series/jayrayner")
+    .showFields("main,body,byline")
+
+  val excludedArticles = Seq(
+    "lifeandstyle/2009/mar/01/jay-rayner-cheap-eats",
+    "lifeandstyle/wordofmouth/2009/jul/08/music-in-restaurants-rayner-lindisfarne",
+    "lifeandstyle/2008/apr/13/foodanddrink.restaurants"
+  )
+}
+
 sealed trait ReviewArticle {
   val id: String
   val webTitle: String
@@ -31,7 +45,23 @@ sealed trait ReviewArticle {
   val webPublicationDate: Option[CapiDateTime]
 }
 
+case class JayRaynerReviewArticle(
+   id: String,
+   webTitle: String,
+   byline: Option[String],
+   body: Option[String],
+   webPublicationDate: Option[CapiDateTime]) extends ReviewArticle
+
+case class MarinaOLoughlinReviewArticle(
+   id: String,
+   webTitle: String,
+   byline: Option[String],
+   body: Option[String],
+   webPublicationDate: Option[CapiDateTime]) extends ReviewArticle
+
+
 object ReviewArticle {
+
   def apply(reviewer: Reviewer, content: Content): ReviewArticle = {
     val id = content.id
     val webTitle = content.webTitle
@@ -41,14 +71,12 @@ object ReviewArticle {
 
     reviewer match {
       case MarinaOLoughlin => MarinaOLoughlinReviewArticle(id, webTitle, byline, body, webPublicationDate)
+      case JayRayner => JayRaynerReviewArticle(id, webTitle, byline, body, webPublicationDate)
     }
   }
 }
 
-case class MarinaOLoughlinReviewArticle(
-   id: String,
-   webTitle: String,
-   byline: Option[String],
-   body: Option[String],
-   webPublicationDate: Option[CapiDateTime]) extends ReviewArticle
+
+
+
 
