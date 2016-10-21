@@ -71,7 +71,6 @@ class MarinaOLoughlinParseNameAndLocationSpec extends FlatSpec with Matchers {
   }
 
   it should "parse restaurant name and location for 'Bronte, London WC2: ‘It doesn’t know whether it’s in Bangkok or Beirut, nor does it much care’ – restaurant review | Marina O’Loughlin'" in {
-
     val webTitle = WebTitle("Bronte, London WC2: ‘It doesn’t know whether it’s in Bangkok or Beirut, nor does it much care’ – restaurant review | Marina O'Loughlin")
     val (restaurantName, approxLocation) = MarinaOLoughlinReviewParser.guessRestaurantNameAndApproximateLocation(webTitle)
     restaurantName.value shouldBe "Bronte"
