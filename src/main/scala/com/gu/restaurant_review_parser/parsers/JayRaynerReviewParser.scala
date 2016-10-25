@@ -5,6 +5,9 @@ import com.gu.restaurant_review_parser.parsers.Parser.RestaurantReviewerBasedPar
 import com.gu.restaurant_review_parser.parsers.Delimiters._
 import com.gu.restaurant_review_parser.ParsedRestaurantReview._
 import com.gu.restaurant_review_parser.parsers.Rules.{PrefixRule, Rule, SuffixRule}
+import org.jsoup.Jsoup
+
+import scala.collection.JavaConverters._
 
 object JayRaynerReviewParser extends RestaurantReviewerBasedParser[JayRaynerReviewArticle] {
 
@@ -52,9 +55,55 @@ object JayRaynerReviewParser extends RestaurantReviewerBasedParser[JayRaynerRevi
 
   def guessRestaurantWebAddress(articleBody: ArticleBody, restaurantName: RestaurantName): Option[WebAddress] = { None }
 
-  def guessRatingBreakdown(articleBody: ArticleBody): Option[RatingBreakdown] = { None }
+  def guessRatingBreakdown(articleBody: ArticleBody): Option[RatingBreakdown] =  None  // Jay Rayner reviews don't provide this.
 
-  def guessFormattedAddress(articleBody: ArticleBody, restaurantName: RestaurantName): Option[FormattedAddress] = { None }
+  def guessFormattedAddress(articleBody: ArticleBody, restaurantName: RestaurantName): Option[FormattedAddress] = {
+
+    val TelephoneLabel = "Telephone:"
+    val AddressLabel = "Address:"
+    val StrongElementType = "strong"
+
+    val doc = Jsoup.parse(articleBody.value)
+
+    def getAddressFromFirstParagraphWhenBold: Option[String] = {
+      val maybeAddressBlockFirstBold = Option(doc.select("p").first)
+        .filter(p => p.children().size == 1 && p.child(0).tagName == StrongElementType && !p.child(0).text.contains(AddressLabel) && !p.child(0).text.contains(TelephoneLabel))
+
+      maybeAddressBlockFirstBold.flatMap(_.text.split(DotSpaceDelimiter).headOption)
+    }
+
+    def getAddressWhenFirstParagraphAndLabelled: Option[String] = {
+      val maybeAddressBlockContainsTelephoneAndAddress = Option(doc.select("p").first)
+        .filter( p => p.html.contains(TelephoneLabel) && p.html.contains(AddressLabel))
+
+      maybeAddressBlockContainsTelephoneAndAddress.flatMap { item =>
+        item.select(StrongElementType).asScala.foreach(_.remove())
+        maybeAddressBlockContainsTelephoneAndAddress.map(_.html.split(BrDelimiter).map(_.trim.stripSuffix(DotDelimiter)).reverse.tail.mkString(CommaSpaceDelimiter))
+      }
+    }
+
+    def getAddressWhenLabelledOverManyParagraphs: Option[String] = {
+      val maybeAddressBlockContainsTelephoneOnly = doc.select("p").iterator().asScala.toSeq.find(p => p.html.contains(TelephoneLabel) && !p.html.contains(AddressLabel))
+      val maybeAddressBlockContainsAddressOnly = doc.select("p").iterator().asScala.toSeq.find(p => p.html.contains(AddressLabel) && !p.html.contains(TelephoneLabel))
+
+      for {
+        address <- maybeAddressBlockContainsAddressOnly
+        telephone <- maybeAddressBlockContainsTelephoneOnly
+      } yield {
+        address.select(StrongElementType).remove()
+        telephone.select(StrongElementType).remove()
+        s"${address.text().stripSuffix(DotDelimiter).trim}, ${telephone.text.trim}"
+      }
+    }
+
+
+    val formattedAddress =
+      getAddressFromFirstParagraphWhenBold orElse
+        getAddressWhenFirstParagraphAndLabelled orElse
+        getAddressWhenLabelledOverManyParagraphs orElse None
+
+    formattedAddress.map(FormattedAddress)
+  }
 
   def guessRestaurantInformation(articleBody: ArticleBody, restaurantName: RestaurantName): Option[RestaurantInformation] = { None }
 
