@@ -1,8 +1,15 @@
 package com.gu.restaurant_review_parser
 
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoField
+import java.util.UUID
 
 import com.google.maps.model.{AddressComponent, AddressComponentType}
+import com.gu.contentatom.thrift.AtomData.Review
+import com.gu.contentatom.thrift._
+import com.gu.contentatom.thrift.atom.review._
+
+import scala.util.Try
 
 case class WebAddress(value: String) extends AnyVal
 case class FormattedAddress(value: String) extends AnyVal
@@ -90,14 +97,32 @@ case class FoodRating(rating: String) extends RatingBreakdownType
 case class AtmosphereRating(rating: String) extends RatingBreakdownType
 case class ValueForMoneyRating(rating: String) extends RatingBreakdownType
 
-case class RatingBreakdown(food: FoodRating, atmosphere: AtmosphereRating, valueForMoney: ValueForMoneyRating)
+case class OverallRating(minimum: Short, actual: Short, maximum: Short)
+
+object OverallRating {
+  val PossibleRatings: Map[String, OverallRating] = Map(
+    "0/10" -> OverallRating(0, 0, 10),
+    "1/10" -> OverallRating(0, 1, 10),
+    "2/10" -> OverallRating(0, 2, 10),
+    "3/10" -> OverallRating(0, 3, 10),
+    "4/10" -> OverallRating(0, 4, 10),
+    "5/10" -> OverallRating(0, 5, 10),
+    "6/10" -> OverallRating(0, 6, 10),
+    "7/10" -> OverallRating(0, 7, 10),
+    "8/10" -> OverallRating(0, 8, 10),
+    "9/10" -> OverallRating(0, 9, 10),
+    "10/10" -> OverallRating(0, 10, 10))
+
+  def returnIfRatingElseNone(ratingStr: String): Option[OverallRating] = if (PossibleRatings.keySet.contains(ratingStr)) PossibleRatings.get(ratingStr) else None
+
+}
 
 case class ParsedRestaurantReview (
-                                    restaurantName: RestaurantName,
-                                    approximateLocation: ApproximateLocation,
+                                    restaurantName: Option[RestaurantName],
+                                    approximateLocation: Option[ApproximateLocation],
                                     reviewer: String,
                                     publicationDate: OffsetDateTime,
-                                    ratingBreakdown: Option[RatingBreakdown],
+                                    ratingBreakdown: Option[OverallRating],
                                     address: Option[FormattedAddress],
                                     addressInformation: Option[AddressInformation],
                                     restaurantInformation: Option[RestaurantInformation],
@@ -105,8 +130,8 @@ case class ParsedRestaurantReview (
 ) {
 
   override def toString: String = {
-    s"Restaurant name: ${restaurantName.value}, \n" +
-    s"Rough location: ${approximateLocation.value}, \n" +
+    s"Restaurant name: ${restaurantName.getOrElse(ParsedRestaurantReview.NoRestaurantName)}, \n" +
+    s"Rough location: ${approximateLocation.getOrElse(ParsedRestaurantReview.NoApproximateLocation)}, \n" +
     s"Reviewer: $reviewer, \n" +
     s"Publication date: ${publicationDate.toString}, \n" +
     s"Ratings: ${ratingBreakdown.getOrElse(ParsedRestaurantReview.NoRatingBreakdown)}, \n" +
@@ -125,5 +150,59 @@ object ParsedRestaurantReview {
   val NoRestaurantInformation = "NO RESTAURANT INFORMATION"
   val NoAddressInformation = "NO ADDRESS INFORMATION"
   val NoWebAddress = "NO WEB ADDRESS"
+
+  def toAtom(review: ParsedRestaurantReview): Atom = {
+
+    val maybeRating = for {
+      ratingBreakdown <- review.ratingBreakdown
+    } yield Rating(ratingBreakdown.minimum, ratingBreakdown.actual, ratingBreakdown.maximum)
+
+    val maybeRestaurantReview = for {
+      name <- review.restaurantName
+    } yield {
+
+      def addressInfoField(f: AddressInformation => Option[String]) = review.addressInformation.flatMap(f)
+
+      RestaurantReview(
+        restaurantName = name.value,
+        approximateLocation = review.approximateLocation.map(_.value),
+        webAddress = review.webAddress.map(_.value),
+        address = Some(Address(
+          formattedAddress = review.address.map(_.value),
+          streetNumber = review.addressInformation.flatMap(_.addressParts.streetNumber.flatMap( num => Try(num.value.toShort).toOption)),
+          streetName = addressInfoField(_.addressParts.route.map(_.value)),
+          neighbourhood = addressInfoField(_.addressParts.neighborhood.map(_.value)),
+          postTown = addressInfoField(_.addressParts.postalTown.map(_.value)),
+          locality = addressInfoField(_.addressParts.locality.map(_.value)),
+          country = addressInfoField(_.addressParts.country.map(_.value)),
+          administrativeAreaLevelOne = addressInfoField(_.addressParts.administrativeAreaLevelOne.map(_.value)),
+          administrativeAreaLevelTwo = addressInfoField(_.addressParts.administrativeAreaLevelTwo.map(_.value)),
+          postCode = addressInfoField(_.addressParts.postalCode.map(_.value))
+        ))
+      )
+    }
+
+    val reviewAtom = ReviewAtom(ReviewType.Restaurant, review.reviewer, maybeRating, reviewSnippet = None, restaurantReview = maybeRestaurantReview)
+
+    val contentChangeDetails = ContentChangeDetails(
+      created = Some(
+        ChangeRecord(
+          date = review.publicationDate.get(ChronoField.MILLI_OF_SECOND),
+          user = Some(
+            User(email = "off-platform@guardian.co.uk")
+          )
+        )
+      ),
+      revision = 1L)
+
+    Atom(
+      id = UUID.randomUUID.toString,
+      atomType = AtomType.Review,
+      labels = Seq.empty,
+      defaultHtml = "",
+      data = Review(reviewAtom),
+      contentChangeDetails = contentChangeDetails
+    )
+  }
 }
 

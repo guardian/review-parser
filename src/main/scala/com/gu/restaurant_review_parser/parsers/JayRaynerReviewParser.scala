@@ -13,7 +13,7 @@ object JayRaynerReviewParser extends RestaurantReviewerBasedParser[JayRaynerRevi
 
   val reviewer: String = "Jay Rayner"
 
-  def guessRestaurantNameAndApproximateLocation(webTitle: WebTitle): (RestaurantName, ApproximateLocation) = {
+  def guessRestaurantNameAndApproximateLocation(webTitle: WebTitle): (Option[RestaurantName], Option[ApproximateLocation]) = {
 
     val rules: Seq[Rule] = {
       val suffixRules: Seq[SuffixRule] = Seq(
@@ -25,6 +25,7 @@ object JayRaynerReviewParser extends RestaurantReviewerBasedParser[JayRaynerRevi
       val prefixRules: Seq[PrefixRule] = Seq(
         PrefixRule("Restaurant review", ColonDelimiter, Seq(CommaDelimiter)),
         PrefixRule("Restaurants", ColonDelimiter, Seq(CommaDelimiter)),
+        PrefixRule("Resturants:", ColonDelimiter, Seq(CommaDelimiter)),
         PrefixRule("Observer Classic", ColonDelimiter, Seq(CommaDelimiter)),
         PrefixRule("Jay Rayner on restaurants:", ColonDelimiter, Seq(CommaDelimiter)),
         PrefixRule("Jay Rayner at", "at", Seq(CommaDelimiter)),
@@ -48,14 +49,14 @@ object JayRaynerReviewParser extends RestaurantReviewerBasedParser[JayRaynerRevi
       case suffixRule: SuffixRule => SuffixRule.applyRule(webTitle, suffixRule)
       case prefixRule: PrefixRule => PrefixRule.applyRule(webTitle, prefixRule)
     }.getOrElse {
-      (RestaurantName(NoRestaurantName), ApproximateLocation(NoApproximateLocation))
+      (None, None)
     }
 
   }
 
   def guessRestaurantWebAddress(articleBody: ArticleBody, restaurantName: RestaurantName): Option[WebAddress] = { None }
 
-  def guessRatingBreakdown(articleBody: ArticleBody): Option[RatingBreakdown] =  None  // Jay Rayner reviews don't provide this.
+  def guessRatingBreakdown(articleBody: ArticleBody): Option[OverallRating] =  None  // Jay Rayner reviews don't provide this.
 
   def guessFormattedAddress(articleBody: ArticleBody, restaurantName: RestaurantName): Option[FormattedAddress] = {
 
@@ -95,7 +96,6 @@ object JayRaynerReviewParser extends RestaurantReviewerBasedParser[JayRaynerRevi
         s"${address.text().stripSuffix(DotDelimiter).trim}, ${telephone.text.trim}"
       }
     }
-
 
     val formattedAddress =
       getAddressFromFirstParagraphWhenBold orElse

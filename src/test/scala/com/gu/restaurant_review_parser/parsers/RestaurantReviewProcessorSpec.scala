@@ -47,14 +47,14 @@ class RestaurantReviewProcessorSpec extends FunSuite with Matchers {
     parsedRestaurantReviews shouldNot be(empty)
     parsedRestaurantReviews.foreach { review =>
 
-      review.restaurantName shouldBe RestaurantName("John Salt")
+      review.restaurantName.get shouldBe RestaurantName("John Salt")
       review.webAddress shouldBe Some(WebAddress("http://john-salt.com/"))
-      review.ratingBreakdown shouldBe Some(RatingBreakdown(FoodRating("7/10"), AtmosphereRating("6/10"), ValueForMoneyRating("8/10")))
+      review.ratingBreakdown shouldBe Some(OverallRating(0, 7, 10))
       review.publicationDate shouldBe OffsetDateTime.parse(webPublicatioDate)
       review.address shouldBe Some(FormattedAddress("131 Upper Street, London N1, 020-7704 8955"))
       review.addressInformation shouldBe Some(AddressInformation(AddressParts(Some(StreetNumber("131")),Some(Route("Upper Street")),Some(Neighborhood("Islington")),Some(Locality("London")),Some(PostalCode("N1")),Some(PostalTown("London")),Some(Country("United Kingdom")),Some(AdministrativeAreaLevelOne("England")),Some(AdministrativeAreaLevelTwo("Greater London"))),Location(51.5390429,-0.1026274)))
       review.restaurantInformation shouldBe Some(RestaurantInformation("Open dinner, Tue-Sat, 6-10pm; Sat brunch, 10am-3pm; Sun lunch noon-4pm. Set menus: four-course, £28, eight £56, 12 £85, plus drinks and service."))
-      review.approximateLocation shouldBe ApproximateLocation("London N1")
+      review.approximateLocation.get shouldBe ApproximateLocation("London N1")
       review.reviewer shouldBe "Marina O'Loughlin"
 
     }

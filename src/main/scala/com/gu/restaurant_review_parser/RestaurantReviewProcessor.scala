@@ -52,7 +52,7 @@ object RestaurantReviewProcessor {
     println(s"Processing content ${article.id}")
 
     val webTitle = WebTitle(article.webTitle)
-    val (name: RestaurantName, approxLocation: ApproximateLocation) = extractor.guessRestaurantNameAndApproximateLocation(webTitle)
+    val (maybeName: Option[RestaurantName], maybeApproxLocation: Option[ApproximateLocation]) = extractor.guessRestaurantNameAndApproximateLocation(webTitle)
 
     val maybeRatingBreakdown = for {
         body <- article.body
@@ -61,16 +61,19 @@ object RestaurantReviewProcessor {
 
     val maybeWebAddress = for {
         body <- article.body
+        name <- maybeName
         webAddress <- extractor.guessRestaurantWebAddress(ArticleBody(body), name)
       } yield webAddress
 
     val maybeAddress = for {
         body <- article.body
+        name <- maybeName
         address <- extractor.guessFormattedAddress(ArticleBody(body), name)
     } yield address
 
     val maybeRestaurantInformation = for {
       body <- article.body
+      name <- maybeName
       restaurantInformation <- extractor.guessRestaurantInformation(ArticleBody(body), name)
     } yield restaurantInformation
 
@@ -83,8 +86,8 @@ object RestaurantReviewProcessor {
     }
 
     val parsedRestaurantReview = ParsedRestaurantReview (
-      restaurantName = name,
-      approximateLocation = approxLocation,
+      restaurantName = maybeName,
+      approximateLocation = maybeApproxLocation,
       reviewer = extractor.reviewer,
       publicationDate = extractor.publicationDate(article.webPublicationDate),
       ratingBreakdown = maybeRatingBreakdown,
