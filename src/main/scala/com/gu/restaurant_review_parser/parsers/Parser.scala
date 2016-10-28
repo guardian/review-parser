@@ -13,8 +13,8 @@ object Parser {
     def guessRestaurantWebAddress(articleBody: ArticleBody, restaurantName: RestaurantName): Option[WebAddress]
     def guessFormattedAddress(articleBody: ArticleBody, restaurantName: RestaurantName): Option[FormattedAddress]
     def guessRestaurantInformation(articleBody: ArticleBody, restaurantName: RestaurantName): Option[RestaurantInformation]
-    def guessRatingBreakdown(articleBody: ArticleBody): Option[RatingBreakdown]
-    def guessRestaurantNameAndApproximateLocation(webTitle: WebTitle): (RestaurantName, ApproximateLocation)
+    def guessRatingBreakdown(articleBody: ArticleBody): Option[OverallRating]
+    def guessRestaurantNameAndApproximateLocation(webTitle: WebTitle): (Option[RestaurantName], Option[ApproximateLocation])
 
   }
 

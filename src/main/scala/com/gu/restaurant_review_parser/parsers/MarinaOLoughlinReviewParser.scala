@@ -5,15 +5,15 @@ import com.gu.restaurant_review_parser.parsers.Parser.RestaurantReviewerBasedPar
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import com.gu.restaurant_review_parser.parsers.Delimiters._
-import com.gu.restaurant_review_parser.ParsedRestaurantReview._
 import com.gu.restaurant_review_parser.parsers.Rules.{PrefixRule, Rule, SuffixRule}
 import scala.collection.JavaConverters._
+
 
 object MarinaOLoughlinReviewParser extends RestaurantReviewerBasedParser[MarinaOLoughlinReviewArticle] {
 
   val reviewer: String = "Marina O'Loughlin"
 
-  def guessRestaurantNameAndApproximateLocation(webTitle: WebTitle): (RestaurantName, ApproximateLocation) = {
+  def guessRestaurantNameAndApproximateLocation(webTitle: WebTitle): (Option[RestaurantName], Option[ApproximateLocation]) = {
 
     val rules: Seq[Rule] = {
       val prefixRules: Seq[PrefixRule] = Seq(
@@ -23,6 +23,10 @@ object MarinaOLoughlinReviewParser extends RestaurantReviewerBasedParser[MarinaO
 
       val suffixRules: Seq[SuffixRule] = Seq(
         SuffixRule(webTitleSuffix = "restaurant review | Marina O'Loughlin", junkTextSeparator = Seq(ColonDelimiter, HyphenDelimiterWithSpaces), restaurantNameAndLocationSeparator = CommaDelimiter),
+        SuffixRule(webTitleSuffix = "restaurant review | Marina O’Loughlin", junkTextSeparator = Seq(ColonDelimiter, HyphenDelimiterWithSpaces), restaurantNameAndLocationSeparator = CommaDelimiter),
+        SuffixRule(webTitleSuffix = "– restaurant review  | Marina O’Loughlin", junkTextSeparator = Seq(ColonDelimiter, HyphenDelimiterWithSpaces), restaurantNameAndLocationSeparator = CommaDelimiter),
+        SuffixRule(webTitleSuffix = "– restaurant review | Marina o’Loughlin", junkTextSeparator = Seq(ColonDelimiter, HyphenDelimiterWithSpaces), restaurantNameAndLocationSeparator = CommaDelimiter),
+        SuffixRule(webTitleSuffix = "| Marina O’Loughlin", junkTextSeparator = Seq(ColonDelimiter, HyphenDelimiterWithSpaces), restaurantNameAndLocationSeparator = CommaDelimiter),
         SuffixRule(webTitleSuffix = "– restaurant review", junkTextSeparator = Seq(ColonDelimiter, HyphenDelimiterWithSpaces), restaurantNameAndLocationSeparator = CommaDelimiter)
       )
 
@@ -39,7 +43,7 @@ object MarinaOLoughlinReviewParser extends RestaurantReviewerBasedParser[MarinaO
       case rule: SuffixRule => SuffixRule.applyRule(webTitle, rule)
     }
       .getOrElse {
-      (RestaurantName(NoRestaurantName), ApproximateLocation(NoApproximateLocation))
+      (None, None)
     }
 
   }
@@ -53,7 +57,8 @@ object MarinaOLoughlinReviewParser extends RestaurantReviewerBasedParser[MarinaO
     maybeAddress.map(elem => WebAddress(elem.attr("href")))
   }
 
-  def guessRatingBreakdown(articleBody: ArticleBody): Option[RatingBreakdown] = {
+  def guessRatingBreakdown(articleBody: ArticleBody): Option[OverallRating] = {
+
     val FoodLabel = "Food".toLowerCase
     val AtmosphereLabel = "Atmosphere".toLowerCase
     val ValueForMoneyLabel = "Value for money".toLowerCase
@@ -82,8 +87,15 @@ object MarinaOLoughlinReviewParser extends RestaurantReviewerBasedParser[MarinaO
       foodRating <- ratingBreakdownTypes.collectFirst { case f: FoodRating => f }
       atmosphereRating <- ratingBreakdownTypes.collectFirst { case a: AtmosphereRating => a }
       valueForMoneyRating <- ratingBreakdownTypes.collectFirst { case v: ValueForMoneyRating => v }
+      fRating <- foodRating.rating.split("\\s").collectFirst { case str => OverallRating.returnIfRatingElseNone(str) }.flatten
+      aRating <- atmosphereRating.rating.split("\\s").collectFirst { case str => OverallRating.returnIfRatingElseNone(str) }.flatten
+      mRating <- valueForMoneyRating.rating.split("\\s").collectFirst { case str => OverallRating.returnIfRatingElseNone(str) }.flatten
     } yield {
-      RatingBreakdown(foodRating, atmosphereRating, valueForMoneyRating)
+      OverallRating(
+        minimum = 0,
+        actual = Math.round(Seq(fRating, aRating, mRating).map(_.actual).sum / 3).toShort,
+        maximum = 10
+      )
     }
   }
 
@@ -122,6 +134,5 @@ object MarinaOLoughlinReviewParser extends RestaurantReviewerBasedParser[MarinaO
     }
 
   }
-
 
 }
