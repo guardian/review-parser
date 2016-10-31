@@ -94,7 +94,8 @@ object RestaurantReviewProcessor {
       address = maybeAddress,
       addressInformation = maybeAddressInformation,
       restaurantInformation = maybeRestaurantInformation,
-      webAddress = maybeWebAddress
+      webAddress = maybeWebAddress,
+      creationDate = extractor.creationDate(article.creationDate)
     )
 
     println(parsedRestaurantReview.toString)

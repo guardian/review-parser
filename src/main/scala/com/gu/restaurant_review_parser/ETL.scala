@@ -14,8 +14,6 @@ import com.gu.contentapi.client.GuardianContentClient
 import com.gu.contentatom.thrift._
 import com.gu.restaurant_review_parser.geocoding.Geocoder
 import integration.PorterAtomIntegration
-import org.joda.time.DateTime
-
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global

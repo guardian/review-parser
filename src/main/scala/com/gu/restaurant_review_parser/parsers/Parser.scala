@@ -9,6 +9,7 @@ object Parser {
   trait RestaurantReviewerBasedParser[T] {
 
     val reviewer: String
+    def creationDate(creationDate: Option[CapiDateTime]) = creationDate.map(time => OffsetDateTime.parse(time.iso8601))
     def publicationDate(webPublicationDate: Option[CapiDateTime]) = webPublicationDate.map(time => OffsetDateTime.parse(time.iso8601)).getOrElse(OffsetDateTime.now)
     def guessRestaurantWebAddress(articleBody: ArticleBody, restaurantName: RestaurantName): Option[WebAddress]
     def guessFormattedAddress(articleBody: ArticleBody, restaurantName: RestaurantName): Option[FormattedAddress]
