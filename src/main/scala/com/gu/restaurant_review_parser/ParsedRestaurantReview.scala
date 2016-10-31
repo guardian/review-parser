@@ -126,7 +126,8 @@ case class ParsedRestaurantReview (
                                     address: Option[FormattedAddress],
                                     addressInformation: Option[AddressInformation],
                                     restaurantInformation: Option[RestaurantInformation],
-                                    webAddress: Option[WebAddress]
+                                    webAddress: Option[WebAddress],
+                                    creationDate: Option[OffsetDateTime]
 ) {
 
   override def toString: String = {
@@ -185,7 +186,15 @@ object ParsedRestaurantReview {
     val reviewAtom = ReviewAtom(ReviewType.Restaurant, review.reviewer, maybeRating, reviewSnippet = None, restaurantReview = maybeRestaurantReview)
 
     val contentChangeDetails = ContentChangeDetails(
-      created = Some(
+      created = review.creationDate map { date =>
+        ChangeRecord(
+          date = date.get(ChronoField.MILLI_OF_SECOND),
+          user = Some(
+            User(email = "off-platform@guardian.co.uk")
+          )
+        )
+      },
+      published = Some(
         ChangeRecord(
           date = review.publicationDate.get(ChronoField.MILLI_OF_SECOND),
           user = Some(
