@@ -12,7 +12,7 @@ import org.apache.thrift.transport.TIOStreamTransport
 
 import scala.util.{Failure, Success, Try}
 
-object PorterAtomIntegration extends StrictLogging {
+object PorterAtomIntegration {
 
   def send(event: ContentAtomEvent, streamName: String)(kinesisClient: AmazonKinesisClient): Unit = {
     val data = ThriftSerializer.serializeEvent(event)
@@ -22,10 +22,11 @@ object PorterAtomIntegration extends StrictLogging {
       .withPartitionKey(event.atom.atomType.name)
 
     Try(kinesisClient.putRecord(record)) match {
-      case Success(_) => logger.info(s"Publishing atom with id: ${event.atom.id}")
-      case Failure(error) => logger.error(s"Failed to publish atom with id: ${event.atom.id}: ${error.getMessage}", error)
+      case Success(_) => println(s"Publishing atom with id: ${event.atom.id}")
+      case Failure(error) => println(s"Failed to publish atom with id: ${event.atom.id}: ${error.getMessage}", error)
     }
   }
+
 
 }
 
