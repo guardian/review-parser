@@ -1,7 +1,6 @@
 package com.gu.restaurant_review_parser
 
 import java.time.OffsetDateTime
-import java.time.temporal.ChronoField
 import java.util.UUID
 
 import com.google.maps.model.{AddressComponent, AddressComponentType}
@@ -135,6 +134,7 @@ case class ParsedRestaurantReview (
     s"Rough location: ${approximateLocation.getOrElse(ParsedRestaurantReview.NoApproximateLocation)}, \n" +
     s"Reviewer: $reviewer, \n" +
     s"Publication date: ${publicationDate.toString}, \n" +
+    s"Creation date: ${creationDate.toString}, \n" +
     s"Ratings: ${ratingBreakdown.getOrElse(ParsedRestaurantReview.NoRatingBreakdown)}, \n" +
     s"Address: ${address.getOrElse(ParsedRestaurantReview.NoAddress)}, \n" +
     s"Address Information: ${addressInformation.getOrElse(ParsedRestaurantReview.NoAddressInformation)}, \n" +
@@ -179,7 +179,8 @@ object ParsedRestaurantReview {
           administrativeAreaLevelOne = addressInfoField(_.addressParts.administrativeAreaLevelOne.map(_.value)),
           administrativeAreaLevelTwo = addressInfoField(_.addressParts.administrativeAreaLevelTwo.map(_.value)),
           postCode = addressInfoField(_.addressParts.postalCode.map(_.value))
-        ))
+        )),
+        geolocation = review.addressInformation.map(_.location).map(geo => Geolocation(lat = geo.latitude, lon = geo.longitude))
       )
     }
 
@@ -188,7 +189,7 @@ object ParsedRestaurantReview {
     val contentChangeDetails = ContentChangeDetails(
       created = review.creationDate map { date =>
         ChangeRecord(
-          date = date.get(ChronoField.MILLI_OF_SECOND),
+          date = date.toInstant.toEpochMilli,
           user = Some(
             User(email = "off-platform@guardian.co.uk")
           )
@@ -196,7 +197,7 @@ object ParsedRestaurantReview {
       },
       published = Some(
         ChangeRecord(
-          date = review.publicationDate.get(ChronoField.MILLI_OF_SECOND),
+          date = review.publicationDate.toInstant.toEpochMilli,
           user = Some(
             User(email = "off-platform@guardian.co.uk")
           )

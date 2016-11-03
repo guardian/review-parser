@@ -1,8 +1,6 @@
 package com.gu.restaurant_review_parser
 
 import java.time.OffsetDateTime
-import java.time.temporal.ChronoField
-
 import com.amazonaws.auth.AWSCredentialsProviderChain
 import com.amazonaws.auth.STSAssumeRoleSessionCredentialsProvider.Builder
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
@@ -70,7 +68,7 @@ object ETL extends App {
 
     val atomEvents = filteredParsedRestaurantReviews map { review =>
       val contentAtom = ParsedRestaurantReview.toAtom(review)
-      ContentAtomEvent(contentAtom, EventType.Update, eventCreationTime = OffsetDateTime.now().get(ChronoField.MICRO_OF_SECOND))
+      ContentAtomEvent(contentAtom, EventType.Update, eventCreationTime = review.creationDate.getOrElse(OffsetDateTime.now).toInstant.toEpochMilli)
     }
 
     println(s"After converting to atoms, we have ${atomEvents.size} atoms for publishing.")

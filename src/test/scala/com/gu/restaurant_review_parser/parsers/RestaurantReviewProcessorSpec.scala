@@ -1,8 +1,6 @@
 package com.gu.restaurant_review_parser.parsers
 
 import java.time.OffsetDateTime
-import java.time.temporal.ChronoField
-
 import com.google.maps.model._
 import com.gu.contentapi.client.model.v1.CapiDateTime
 import com.gu.restaurant_review_parser._
@@ -22,8 +20,8 @@ class RestaurantReviewProcessorSpec extends FunSuite with Matchers {
         webTitle = "Restaurant: John Salt, London N1",
         byline = Some("Marina O'Loughlin"),
         body = Some(TestUtils.resourceToString("articles/marinaOLoughlin/lifeandstyle-2012-dec-07-john-salt-london-restaurant-review.txt")),
-        webPublicationDate = Some(CapiDateTime(OffsetDateTime.parse(webPublicatioDate).get(ChronoField.MILLI_OF_SECOND), webPublicatioDate)),
-        creationDate = Some(CapiDateTime(OffsetDateTime.parse(creationDate).get(ChronoField.MILLI_OF_SECOND), creationDate))
+        webPublicationDate = Some(CapiDateTime(OffsetDateTime.parse(webPublicatioDate).toInstant.toEpochMilli, webPublicatioDate)),
+        creationDate = Some(CapiDateTime(OffsetDateTime.parse(creationDate).toInstant.toEpochMilli, creationDate))
       )
     )
 
