@@ -1,6 +1,7 @@
 package com.gu.restaurant_review_parser.parsers
 
 import java.time.OffsetDateTime
+
 import com.gu.contentapi.client.model.v1.CapiDateTime
 import com.gu.restaurant_review_parser._
 
@@ -9,6 +10,7 @@ object Parser {
   trait RestaurantReviewerBasedParser[T] {
 
     val reviewer: String
+    def guessReviewSnippet(standfirst: Option[Standfirst]): Option[ReviewSnippet] = standfirst.map(sf => ReviewSnippet(sf.value.stripSuffix("'").stripPrefix("'")))
     def creationDate(creationDate: Option[CapiDateTime]) = creationDate.map(time => OffsetDateTime.parse(time.iso8601))
     def publicationDate(webPublicationDate: Option[CapiDateTime]) = webPublicationDate.map(time => OffsetDateTime.parse(time.iso8601)).getOrElse(OffsetDateTime.now)
     def guessRestaurantWebAddress(articleBody: ArticleBody, restaurantName: RestaurantName): Option[WebAddress]

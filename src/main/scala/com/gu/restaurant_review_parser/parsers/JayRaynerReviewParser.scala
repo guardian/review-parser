@@ -54,7 +54,7 @@ object JayRaynerReviewParser extends RestaurantReviewerBasedParser[JayRaynerRevi
 
   }
 
-  def guessRestaurantWebAddress(articleBody: ArticleBody, restaurantName: RestaurantName): Option[WebAddress] = { None }
+  def guessRestaurantWebAddress(articleBody: ArticleBody, restaurantName: RestaurantName): Option[WebAddress] = None
 
   def guessRatingBreakdown(articleBody: ArticleBody): Option[OverallRating] =  None  // Jay Rayner reviews don't provide this.
 
@@ -105,7 +105,7 @@ object JayRaynerReviewParser extends RestaurantReviewerBasedParser[JayRaynerRevi
     formattedAddress.map(FormattedAddress)
   }
 
-  def guessRestaurantInformation(articleBody: ArticleBody, restaurantName: RestaurantName): Option[RestaurantInformation] = { None }
+  def guessRestaurantInformation(articleBody: ArticleBody, restaurantName: RestaurantName): Option[RestaurantInformation] = None
 
 }
 

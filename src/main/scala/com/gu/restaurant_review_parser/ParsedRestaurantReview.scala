@@ -17,6 +17,8 @@ case class ArticleBody(value: String) extends AnyVal
 case class RestaurantName(value: String) extends AnyVal
 case class ApproximateLocation(value: String) extends AnyVal
 case class WebTitle(value: String) extends AnyVal
+case class Standfirst(value: String) extends AnyVal
+case class ReviewSnippet(value: String) extends AnyVal
 
 sealed trait AddressPart
 case class StreetNumber(value: String) extends AddressPart
@@ -126,7 +128,8 @@ case class ParsedRestaurantReview (
                                     addressInformation: Option[AddressInformation],
                                     restaurantInformation: Option[RestaurantInformation],
                                     webAddress: Option[WebAddress],
-                                    creationDate: Option[OffsetDateTime]
+                                    creationDate: Option[OffsetDateTime],
+                                    reviewSnippet: Option[ReviewSnippet]
 ) {
 
   override def toString: String = {
@@ -139,7 +142,8 @@ case class ParsedRestaurantReview (
     s"Address: ${address.getOrElse(ParsedRestaurantReview.NoAddress)}, \n" +
     s"Address Information: ${addressInformation.getOrElse(ParsedRestaurantReview.NoAddressInformation)}, \n" +
     s"Restaurant information: ${restaurantInformation.getOrElse(ParsedRestaurantReview.NoRestaurantInformation)}, \n" +
-    s"Web address: ${webAddress.getOrElse(ParsedRestaurantReview.NoWebAddress)} \n"
+    s"Web address: ${webAddress.getOrElse(ParsedRestaurantReview.NoWebAddress)} \n" +
+    s"Review snippet: ${reviewSnippet.getOrElse(ParsedRestaurantReview.NoReviewSnippet)}"
   }
 }
 
@@ -151,6 +155,7 @@ object ParsedRestaurantReview {
   val NoRestaurantInformation = "NO RESTAURANT INFORMATION"
   val NoAddressInformation = "NO ADDRESS INFORMATION"
   val NoWebAddress = "NO WEB ADDRESS"
+  val NoReviewSnippet = "NO REVIEW SNIPPET"
 
   def toAtom(review: ParsedRestaurantReview): Atom = {
 
@@ -184,7 +189,9 @@ object ParsedRestaurantReview {
       )
     }
 
-    val reviewAtom = ReviewAtom(ReviewType.Restaurant, review.reviewer, maybeRating, reviewSnippet = None, restaurantReview = maybeRestaurantReview)
+    val maybeReviewSnippet = review.reviewSnippet.map(_.value)
+
+    val reviewAtom = ReviewAtom(ReviewType.Restaurant, review.reviewer, maybeRating, reviewSnippet = maybeReviewSnippet, restaurantReview = maybeRestaurantReview)
 
     val contentChangeDetails = ContentChangeDetails(
       created = review.creationDate map { date =>
