@@ -52,6 +52,7 @@ object RestaurantReviewProcessor {
     println(s"Processing content ${article.id}")
 
     val webTitle = WebTitle(article.webTitle)
+    val maybeStandfirst = article.standfirst map Standfirst
     val (maybeName: Option[RestaurantName], maybeApproxLocation: Option[ApproximateLocation]) = extractor.guessRestaurantNameAndApproximateLocation(webTitle)
 
     val maybeRatingBreakdown = for {
@@ -95,7 +96,8 @@ object RestaurantReviewProcessor {
       addressInformation = maybeAddressInformation,
       restaurantInformation = maybeRestaurantInformation,
       webAddress = maybeWebAddress,
-      creationDate = extractor.creationDate(article.creationDate)
+      creationDate = extractor.creationDate(article.creationDate),
+      reviewSnippet = extractor.guessReviewSnippet(maybeStandfirst)
     )
 
     println(parsedRestaurantReview.toString)
