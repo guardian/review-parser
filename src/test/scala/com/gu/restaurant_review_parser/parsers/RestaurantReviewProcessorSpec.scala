@@ -21,7 +21,8 @@ class RestaurantReviewProcessorSpec extends FunSuite with Matchers {
         byline = Some("Marina O'Loughlin"),
         body = Some(TestUtils.resourceToString("articles/marinaOLoughlin/lifeandstyle-2012-dec-07-john-salt-london-restaurant-review.txt")),
         webPublicationDate = Some(CapiDateTime(OffsetDateTime.parse(webPublicatioDate).toInstant.toEpochMilli, webPublicatioDate)),
-        creationDate = Some(CapiDateTime(OffsetDateTime.parse(creationDate).toInstant.toEpochMilli, creationDate))
+        creationDate = Some(CapiDateTime(OffsetDateTime.parse(creationDate).toInstant.toEpochMilli, creationDate)),
+        standfirst = Some("As everyone in the room applies tongues to bricks, all I think is, someone's having a laugh")
       )
     )
 
@@ -57,6 +58,7 @@ class RestaurantReviewProcessorSpec extends FunSuite with Matchers {
       review.addressInformation shouldBe Some(AddressInformation(AddressParts(Some(StreetNumber("131")),Some(Route("Upper Street")),Some(Neighborhood("Islington")),Some(Locality("London")),Some(PostalCode("N1")),Some(PostalTown("London")),Some(Country("United Kingdom")),Some(AdministrativeAreaLevelOne("England")),Some(AdministrativeAreaLevelTwo("Greater London"))),Location(51.5390429,-0.1026274)))
       review.restaurantInformation shouldBe Some(RestaurantInformation("Open dinner, Tue-Sat, 6-10pm; Sat brunch, 10am-3pm; Sun lunch noon-4pm. Set menus: four-course, £28, eight £56, 12 £85, plus drinks and service."))
       review.approximateLocation.get shouldBe ApproximateLocation("London N1")
+      review.reviewSnippet shouldBe Some(ReviewSnippet("As everyone in the room applies tongues to bricks, all I think is, someone's having a laugh"))
       review.reviewer shouldBe "Marina O'Loughlin"
 
     }

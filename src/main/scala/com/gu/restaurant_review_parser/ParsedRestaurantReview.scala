@@ -129,7 +129,8 @@ case class ParsedRestaurantReview (
                                     restaurantInformation: Option[RestaurantInformation],
                                     webAddress: Option[WebAddress],
                                     creationDate: Option[OffsetDateTime],
-                                    reviewSnippet: Option[ReviewSnippet]
+                                    reviewSnippet: Option[ReviewSnippet],
+                                    originContentId: String
 ) {
 
   override def toString: String = {
@@ -213,7 +214,7 @@ object ParsedRestaurantReview {
       revision = 1L)
 
     Atom(
-      id = UUID.randomUUID.toString,
+      id = generateId(review.originContentId),
       atomType = AtomType.Review,
       labels = Seq.empty,
       defaultHtml = "",
@@ -221,5 +222,13 @@ object ParsedRestaurantReview {
       contentChangeDetails = contentChangeDetails
     )
   }
+
+  /**
+   * The id for a particular atom must be the same, irregardless of the number of times we run the ETL script. This
+   * ensures the atom is updated in Elasticsearch as opposed to a new one being created each time.
+   *
+   * In the case of restaurant reviews, we only ever have one restaurant review per page so we can simply use the id of the content.
+   */
+  private[restaurant_review_parser] def generateId(originContentId: String): String = java.util.UUID.nameUUIDFromBytes(originContentId.getBytes).toString
 }
 
