@@ -1,24 +1,35 @@
-organization := "com.gu"
-name:= "review-extractor"
-description := "Extracts, where it can, structured data from Guardian review articles."
-scalaVersion := "2.11.8"
-scalacOptions ++= Seq("-feature", "-deprecation", "-unchecked", "-target:jvm-1.8", "-Xfatal-warnings")
-scalacOptions in doc in Compile := Nil
-resolvers += "Guardian GitHub Repository" at "http://guardian.github.io/maven/repo-releases"
-resolvers += Resolver.sonatypeRepo("releases")
 
 val AwsSdkVersion = "1.11.46"
 
-libraryDependencies ++= Seq(
-  "org.jsoup" % "jsoup" % "1.9.2",
-  "com.gu" %% "content-api-client" % "10.8",
-  "com.amazonaws" % "aws-java-sdk-sts" % AwsSdkVersion,
-  "com.amazonaws" % "aws-java-sdk-kinesis" % AwsSdkVersion,
-  "com.google.maps" % "google-maps-services" % "0.1.16",
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
-  "org.scalatest" %% "scalatest" % "2.2.6" % Test
+val commonSettings = Seq(
+  scalaVersion := "2.11.8",
+  organization := "com.gu",
+  description := "Extracts, where it can, structured data from Guardian review articles.",
+  scalacOptions ++= Seq("-feature", "-deprecation", "-unchecked", "-target:jvm-1.8", "-Xfatal-warnings"),
+  scalacOptions in doc in Compile := Nil,
+  resolvers += "Guardian GitHub Repository" at "http://guardian.github.io/maven/repo-releases",
+  resolvers += Resolver.sonatypeRepo("releases"),
+  libraryDependencies ++= Seq(
+    "org.jsoup" % "jsoup" % "1.9.2",
+    "com.gu" %% "content-api-client" % "10.8",
+    "com.amazonaws" % "aws-java-sdk-sts" % AwsSdkVersion,
+    "com.amazonaws" % "aws-java-sdk-kinesis" % AwsSdkVersion,
+    "com.google.maps" % "google-maps-services" % "0.1.16",
+    "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
+    "org.scalatest" %% "scalatest" % "2.2.6" % Test
+  )
 )
 
+lazy val root = (project in file("."))
+  .aggregate(restaurants, common)
+
+lazy val common = (project in file("common"))
+  .settings(commonSettings)
+
+lazy val restaurants = (project in file("restaurants"))
+  .dependsOn(common)
+  .settings(commonSettings)
+  .settings(Seq(name := "restaurants"))
 
 initialize := {
   val _ = initialize.value
