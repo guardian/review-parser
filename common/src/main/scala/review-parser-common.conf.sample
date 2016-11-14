@@ -1,0 +1,28 @@
+review-parser {
+	code {
+		capi {
+			apiKey=""
+		}
+		auxiliaryAtom {
+			streamName="auxiliary-atom-feed-CODE"
+			stsRoleArn=""
+		}
+		contentAtom {
+			streamName="content-atom-events-live-CODE"
+			stsRoleArn=""
+		}
+	}
+	prod {
+		capi {
+			apiKey=""
+		}
+		auxiliaryAtom {
+			streamName="auxiliary-atom-feed-PROD"
+			stsRoleArn=""
+		}
+		contentAtom {
+			streamName="content-atom-events-live-PROD"
+			stsRoleArn=""
+		}
+	}
+}
