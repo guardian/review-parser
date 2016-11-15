@@ -7,7 +7,7 @@ import com.google.maps.model.GeocodingResult
 import com.gu.auxiliaryatom.model.auxiliaryatomevent.v1.{AuxiliaryAtom, AuxiliaryAtomEvent, EventType => AuxiliaryAtomEventType}
 import com.gu.contentatom.thrift._
 import com.gu.restaurant_review_parser.geocoding.Geocoder
-import integration.{ComposerAuxiliaryAtomIntegration, PorterAtomIntegration, ReviewParserConfig}
+import integration.{AtomPublisher, ReviewParserConfig}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -45,24 +45,22 @@ object ETL extends App {
     val parsedRestaurantReviews: Seq[ParsedRestaurantReview] = RestaurantReviewProcessor.processRestaurantReviews(pages, reviewer, config.capiConfig.capiClient, geocodeFn)
 
     println(s"We have successfully parsed ${parsedRestaurantReviews.size} restaurant reviews out of a total of ${firstPage.total} [${reviewer.excludedArticles.size} excluded].")
-
     val filteredParsedRestaurantReviews = ParsedRestaurantReviewFilter.filter(parsedRestaurantReviews)
 
     println(s"After filtering, we have ${filteredParsedRestaurantReviews.size} restaurant reviews to publish.")
+    val atomEvents: Seq[(AuxiliaryAtomEvent, ContentAtomEvent)] = filteredParsedRestaurantReviews flatMap { review =>
+      review.internalComposerCode.map { internalComposerCode =>
+        val contentAtom = ParsedRestaurantReview.toAtom(review)
+        val auxiliaryAtomEvent = AuxiliaryAtomEvent(internalComposerCode, eventType = AuxiliaryAtomEventType.Add, Seq(AuxiliaryAtom(contentAtom.id, "review")))
+        val contentAtomEvent = ContentAtomEvent(contentAtom, EventType.Update, eventCreationTime = review.creationDate.getOrElse(OffsetDateTime.now).toInstant.toEpochMilli)
 
-    val atomEvents: Seq[(AuxiliaryAtomEvent, ContentAtomEvent)] = filteredParsedRestaurantReviews map { review =>
-      val contentAtom = ParsedRestaurantReview.toAtom(review)
-      val auxiliaryAtomEvent = AuxiliaryAtomEvent(review.originContentId, eventType = AuxiliaryAtomEventType.Add, Seq(AuxiliaryAtom(contentAtom.id, AtomType.Review.toString)))
-      val contentAtomEvent = ContentAtomEvent(contentAtom, EventType.Update, eventCreationTime = review.creationDate.getOrElse(OffsetDateTime.now).toInstant.toEpochMilli)
-
-      (auxiliaryAtomEvent, contentAtomEvent)
+        (auxiliaryAtomEvent, contentAtomEvent)
+      }
     }
 
     println(s"After converting to atoms, we have ${atomEvents.size} atoms for publishing.")
-
     atomEvents.foreach { case (auxiliaryAtomEvent, contentAtomEvent) =>
-      ComposerAuxiliaryAtomIntegration.send(auxiliaryAtomEvent)(config)
-      PorterAtomIntegration.send(contentAtomEvent)(config)
+      AtomPublisher.send(auxiliaryAtomEvent, contentAtomEvent)(config)
     }
 
     println(s"Finished!")
@@ -71,3 +69,4 @@ object ETL extends App {
   }
 
 }
+

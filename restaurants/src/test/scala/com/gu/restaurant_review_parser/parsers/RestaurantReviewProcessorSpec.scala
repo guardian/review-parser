@@ -22,7 +22,8 @@ class RestaurantReviewProcessorSpec extends FunSuite with Matchers {
         body = Some(TestUtils.resourceToString("articles/marinaOLoughlin/lifeandstyle-2012-dec-07-john-salt-london-restaurant-review.txt")),
         webPublicationDate = Some(CapiDateTime(OffsetDateTime.parse(webPublicatioDate).toInstant.toEpochMilli, webPublicatioDate)),
         creationDate = Some(CapiDateTime(OffsetDateTime.parse(creationDate).toInstant.toEpochMilli, creationDate)),
-        standfirst = Some("As everyone in the room applies tongues to bricks, all I think is, someone's having a laugh")
+        standfirst = Some("As everyone in the room applies tongues to bricks, all I think is, someone's having a laugh"),
+        internalComposerCode = Some("this-is-a-composer-code")
       )
     )
 
@@ -60,6 +61,7 @@ class RestaurantReviewProcessorSpec extends FunSuite with Matchers {
       review.approximateLocation.get shouldBe ApproximateLocation("London N1")
       review.reviewSnippet shouldBe Some(ReviewSnippet("As everyone in the room applies tongues to bricks, all I think is, someone's having a laugh"))
       review.reviewer shouldBe "Marina O'Loughlin"
+      review.internalComposerCode shouldBe Some("this-is-a-composer-code")
 
     }
 

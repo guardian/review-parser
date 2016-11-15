@@ -98,7 +98,8 @@ object RestaurantReviewProcessor {
       webAddress = maybeWebAddress,
       creationDate = extractor.creationDate(article.creationDate),
       reviewSnippet = extractor.guessReviewSnippet(maybeStandfirst),
-      originContentId = article.id
+      originContentId = article.id,
+      internalComposerCode = article.internalComposerCode
     )
 
     println(parsedRestaurantReview.toString)

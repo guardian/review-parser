@@ -13,7 +13,7 @@ case object MarinaOLoughlin extends Reviewer {
     .pageSize(200)
     .contentType("article")
     .tag("lifeandstyle/series/marina-o-loughlin-on-restaurants")
-    .showFields("main,body,byline,creationDate,standfirst")
+    .showFields("main,body,byline,creationDate,standfirst,internalComposerCode")
 
   val excludedArticles = Seq(
     "lifeandstyle/2015/oct/24/marina-oloughlin-top-50-uk-restaurants",
@@ -28,7 +28,7 @@ case object JayRayner extends Reviewer {
     .pageSize(200)
     .contentType("article")
     .tag("lifeandstyle/series/jayrayner")
-    .showFields("main,body,byline,creationDate,standfirst")
+    .showFields("main,body,byline,creationDate,standfirst,internalComposerCode")
 
   val excludedArticles = Seq(
     "lifeandstyle/2009/mar/01/jay-rayner-cheap-eats",
@@ -45,6 +45,7 @@ sealed trait ReviewArticle {
   val webPublicationDate: Option[CapiDateTime]
   val creationDate: Option[CapiDateTime]
   val standfirst: Option[String]
+  val internalComposerCode: Option[String]
 }
 
 case class JayRaynerReviewArticle(
@@ -54,7 +55,8 @@ case class JayRaynerReviewArticle(
                                    body: Option[String],
                                    webPublicationDate: Option[CapiDateTime],
                                    creationDate: Option[CapiDateTime],
-                                   standfirst: Option[String]) extends ReviewArticle
+                                   standfirst: Option[String],
+                                   internalComposerCode: Option[String]) extends ReviewArticle
 
 case class MarinaOLoughlinReviewArticle(
                                          id: String,
@@ -63,7 +65,8 @@ case class MarinaOLoughlinReviewArticle(
                                          body: Option[String],
                                          webPublicationDate: Option[CapiDateTime],
                                          creationDate: Option[CapiDateTime],
-                                         standfirst: Option[String]) extends ReviewArticle
+                                         standfirst: Option[String],
+                                         internalComposerCode: Option[String]) extends ReviewArticle
 
 
 object ReviewArticle {
@@ -76,10 +79,11 @@ object ReviewArticle {
     val webPublicationDate = content.webPublicationDate
     val creationDate = content.fields.flatMap(_.creationDate)
     val standfirst = content.fields.flatMap(_.standfirst)
+    val internalComposerCode = content.fields.flatMap(_.internalComposerCode)
 
     reviewer match {
-      case MarinaOLoughlin => MarinaOLoughlinReviewArticle(id, webTitle, byline, body, webPublicationDate, creationDate, standfirst)
-      case JayRayner => JayRaynerReviewArticle(id, webTitle, byline, body, webPublicationDate, creationDate, standfirst)
+      case MarinaOLoughlin => MarinaOLoughlinReviewArticle(id, webTitle, byline, body, webPublicationDate, creationDate, standfirst, internalComposerCode)
+      case JayRayner => JayRaynerReviewArticle(id, webTitle, byline, body, webPublicationDate, creationDate, standfirst, internalComposerCode)
     }
   }
 }

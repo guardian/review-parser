@@ -130,7 +130,8 @@ case class ParsedRestaurantReview (
                                     webAddress: Option[WebAddress],
                                     creationDate: Option[OffsetDateTime],
                                     reviewSnippet: Option[ReviewSnippet],
-                                    originContentId: String
+                                    originContentId: String,
+                                    internalComposerCode: Option[String]
 ) {
 
   override def toString: String = {
