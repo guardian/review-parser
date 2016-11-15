@@ -11,7 +11,8 @@ val commonSettings = Seq(
   resolvers += Resolver.sonatypeRepo("releases"),
   libraryDependencies ++= Seq(
     "org.jsoup" % "jsoup" % "1.9.2",
-    "com.gu" %% "content-api-client" % "10.8",
+    "com.typesafe" % "config" % "1.3.1",
+    "com.gu" %% "content-api-client" % "10.10",
     "com.amazonaws" % "aws-java-sdk-sts" % AwsSdkVersion,
     "com.amazonaws" % "aws-java-sdk-kinesis" % AwsSdkVersion,
     "com.google.maps" % "google-maps-services" % "0.1.16",
