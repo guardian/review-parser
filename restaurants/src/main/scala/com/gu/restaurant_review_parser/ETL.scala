@@ -59,9 +59,7 @@ object ETL extends App {
     }
 
     println(s"After converting to atoms, we have ${atomEvents.size} atoms for publishing.")
-    atomEvents.foreach { case (auxiliaryAtomEvent, contentAtomEvent) =>
-      AtomPublisher.send(auxiliaryAtomEvent, contentAtomEvent)(config)
-    }
+    AtomPublisher.send(atomEvents)(config)
 
     println(s"Finished!")
   } finally {

@@ -45,14 +45,16 @@ object AtomPublisher {
 
   /**
     * Sends events to Porter and Composer to create new Content and Auxiliary atoms respectively.
-    *
-    * @param auxiliaryAtomEvent
-    * @param contentAtomEvent
+    * @param atomEvents
     * @param config
     */
-  def send(auxiliaryAtomEvent: AuxiliaryAtomEvent, contentAtomEvent: ContentAtomEvent)(config: ReviewParserConfig): Unit = {
-    composerAuxiliaryAtomIntegration.send(auxiliaryAtomEvent)(config)
-    porterAtomIntegration.send(contentAtomEvent)(config)
+  def send(atomEvents: Seq[(AuxiliaryAtomEvent, ContentAtomEvent)])(config: ReviewParserConfig): Unit = {
+    atomEvents.foreach { case (auxiliaryAtomEvent, contentAtomEvent) =>
+      composerAuxiliaryAtomIntegration.send(auxiliaryAtomEvent)(config)
+      porterAtomIntegration.send(contentAtomEvent)(config)
+      Thread.sleep(500)
+    }
+
   }
 
 }
