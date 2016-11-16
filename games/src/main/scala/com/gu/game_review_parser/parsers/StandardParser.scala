@@ -1,5 +1,7 @@
 package com.gu.game_review_parser.parsers
 
+import java.time.OffsetDateTime
+
 import com.gu.contentapi.client.model.v1.Content
 import com.gu.game_review_parser.ParsedGameReview
 import org.jsoup.Jsoup
@@ -11,13 +13,16 @@ object StandardParser {
     val parsed = for {
       title <- getTitle(content.webTitle)
       fields <- content.fields
+      internalComposerCode <- fields.internalComposerCode
+      creationDate = fields.creationDate.map(time => OffsetDateTime.parse(time.iso8601))
+      publicationDate = content.webPublicationDate.map(time => OffsetDateTime.parse(time.iso8601)).getOrElse(OffsetDateTime.now)
       reviewer <- fields.byline
       starRating <- fields.starRating
       reviewSnippet <- fields.standfirst.map(s => Jsoup.parse(s).text())
       body <- fields.body
       details = getDetails(body)
     } yield {
-      ParsedGameReview(reviewer, starRating, reviewSnippet, title, details.publisher, details.platforms, details.price, details.pegiRating)
+      ParsedGameReview(content.id, internalComposerCode, creationDate, publicationDate, reviewer, starRating, reviewSnippet, title, details.publisher, details.platforms, details.price, details.pegiRating)
     }
 
     parsed match {
