@@ -7,6 +7,8 @@ import com.google.maps.model.{AddressComponent, AddressComponentType}
 import com.gu.contentatom.thrift.AtomData.Review
 import com.gu.contentatom.thrift._
 import com.gu.contentatom.thrift.atom.review._
+import com.gu.contententity.thrift.{Address, Geolocation}
+import com.gu.contententity.thrift.entity.restaurant.Restaurant
 
 import scala.util.Try
 
@@ -159,19 +161,19 @@ object ParsedRestaurantReview {
   val NoWebAddress = "NO WEB ADDRESS"
   val NoReviewSnippet = "NO REVIEW SNIPPET"
 
-  def toAtom(review: ParsedRestaurantReview): Atom = {
+  def toAtom(review: ParsedRestaurantReview): Option[Atom] = {
 
-    val maybeRating = for {
+    for {
       ratingBreakdown <- review.ratingBreakdown
-    } yield Rating(ratingBreakdown.minimum, ratingBreakdown.actual, ratingBreakdown.maximum)
-
-    val maybeRestaurantReview = for {
+      name <- review.restaurantName
+      reviewSnippet <- review.reviewSnippet.map(_.value)
       name <- review.restaurantName
     } yield {
+      val rating = Rating(ratingBreakdown.minimum, ratingBreakdown.actual, ratingBreakdown.maximum)
 
       def addressInfoField(f: AddressInformation => Option[String]) = review.addressInformation.flatMap(f)
 
-      RestaurantReview(
+      val restaurant = Restaurant(
         restaurantName = name.value,
         approximateLocation = review.approximateLocation.map(_.value),
         webAddress = review.webAddress.map(_.value),
@@ -189,39 +191,40 @@ object ParsedRestaurantReview {
         )),
         geolocation = review.addressInformation.map(_.location).map(geo => Geolocation(lat = geo.latitude, lon = geo.longitude))
       )
+
+      val entityId = "" // we don't create and store entities seperately yet.
+
+      val reviewAtom = ReviewAtom(ReviewType.Restaurant, review.reviewer, rating, reviewSnippet, entityId, Some(restaurant))
+
+      val contentChangeDetails = ContentChangeDetails(
+        created = review.creationDate map { date =>
+          ChangeRecord(
+            date = date.toInstant.toEpochMilli,
+            user = Some(
+              User(email = "off-platform@guardian.co.uk")
+            )
+          )
+        },
+        published = Some(
+          ChangeRecord(
+            date = review.publicationDate.toInstant.toEpochMilli,
+            user = Some(
+              User(email = "off-platform@guardian.co.uk")
+            )
+          )
+        ),
+        revision = 1L)
+
+      Atom(
+        id = generateId(review.originContentId),
+        atomType = AtomType.Review,
+        labels = Seq.empty,
+        defaultHtml = "",
+        data = Review(reviewAtom),
+        contentChangeDetails = contentChangeDetails
+      )
+
     }
-
-    val maybeReviewSnippet = review.reviewSnippet.map(_.value)
-
-    val reviewAtom = ReviewAtom(ReviewType.Restaurant, review.reviewer, maybeRating, reviewSnippet = maybeReviewSnippet, restaurantReview = maybeRestaurantReview)
-
-    val contentChangeDetails = ContentChangeDetails(
-      created = review.creationDate map { date =>
-        ChangeRecord(
-          date = date.toInstant.toEpochMilli,
-          user = Some(
-            User(email = "off-platform@guardian.co.uk")
-          )
-        )
-      },
-      published = Some(
-        ChangeRecord(
-          date = review.publicationDate.toInstant.toEpochMilli,
-          user = Some(
-            User(email = "off-platform@guardian.co.uk")
-          )
-        )
-      ),
-      revision = 1L)
-
-    Atom(
-      id = generateId(review.originContentId),
-      atomType = AtomType.Review,
-      labels = Seq.empty,
-      defaultHtml = "",
-      data = Review(reviewAtom),
-      contentChangeDetails = contentChangeDetails
-    )
   }
 
   /**

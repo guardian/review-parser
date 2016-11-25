@@ -49,13 +49,17 @@ object ETL extends App {
 
     println(s"After filtering, we have ${filteredParsedRestaurantReviews.size} restaurant reviews to publish.")
     val atomEvents: Seq[(AuxiliaryAtomEvent, ContentAtomEvent)] = filteredParsedRestaurantReviews flatMap { review =>
-      review.internalComposerCode.map { internalComposerCode =>
-        val contentAtom = ParsedRestaurantReview.toAtom(review)
+
+      for {
+        internalComposerCode <- review.internalComposerCode
+        contentAtom <- ParsedRestaurantReview.toAtom(review)
+      } yield {
         val auxiliaryAtomEvent = AuxiliaryAtomEvent(internalComposerCode, eventType = AuxiliaryAtomEventType.Add, Seq(AuxiliaryAtom(contentAtom.id, "review")))
         val contentAtomEvent = ContentAtomEvent(contentAtom, EventType.Update, eventCreationTime = review.creationDate.getOrElse(OffsetDateTime.now).toInstant.toEpochMilli)
 
         (auxiliaryAtomEvent, contentAtomEvent)
       }
+
     }
 
     println(s"After converting to atoms, we have ${atomEvents.size} atoms for publishing.")
