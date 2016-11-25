@@ -10,12 +10,14 @@ import org.apache.thrift.transport.TIOStreamTransport
 
 object ThriftSerializer {
 
+  val CompressionTypeNone = 0x00.toByte
+
   def serializeEvent[T <: ThriftStruct](event: T): ByteBuffer = {
     val out = new ByteArrayOutputStream()
     val transport = new TIOStreamTransport(out)
     val protocol = new TCompactProtocol(transport)
     event.write(protocol)
-    ByteBuffer.wrap(out.toByteArray)
+    ByteBuffer.wrap(CompressionTypeNone +: out.toByteArray)
   }
 
 }
