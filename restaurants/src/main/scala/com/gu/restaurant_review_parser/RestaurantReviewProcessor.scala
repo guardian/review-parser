@@ -102,8 +102,6 @@ object RestaurantReviewProcessor {
       internalComposerCode = article.internalComposerCode
     )
 
-    println(parsedRestaurantReview.toString)
-
     parsedRestaurantReview
   }
 

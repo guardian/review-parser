@@ -48,6 +48,8 @@ object ETL extends App {
     val filteredParsedRestaurantReviews = ParsedRestaurantReviewFilter.filter(parsedRestaurantReviews)
 
     println(s"After filtering, we have ${filteredParsedRestaurantReviews.size} restaurant reviews to publish.")
+
+    println(s"The ids of the reviews that are not ready to publish are: ${parsedRestaurantReviews diff filteredParsedRestaurantReviews map(_.originContentId)}")
     val atomEvents: Seq[(AuxiliaryAtomEvent, ContentAtomEvent)] = filteredParsedRestaurantReviews flatMap { review =>
 
       for {

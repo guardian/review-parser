@@ -137,6 +137,7 @@ case class ParsedRestaurantReview (
 ) {
 
   override def toString: String = {
+    "\n" +
     s"Restaurant name: ${restaurantName.getOrElse(ParsedRestaurantReview.NoRestaurantName)}, \n" +
     s"Rough location: ${approximateLocation.getOrElse(ParsedRestaurantReview.NoApproximateLocation)}, \n" +
     s"Reviewer: $reviewer, \n" +
