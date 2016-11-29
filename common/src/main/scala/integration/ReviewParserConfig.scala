@@ -30,22 +30,22 @@ object ReviewParserConfig {
     def getMandatoryString(item: String) = Try(conf.getString(item)).toOption getOrElse sys.error(s"Could not get item $item from config. Exiting.")
 
     val contentAtomStreamName = getMandatoryString("contentAtom.streamName")
-      val contentAtomStsRoleArn = getMandatoryString("contentAtom.stsRoleArn")
+    val contentAtomStsRoleArn = getMandatoryString("contentAtom.stsRoleArn")
 
-      val contentAtomConfig = ContentAtomConfig(
-        contentAtomStreamName,
-        contentAtomStsRoleArn,
-        kinesisClient = {
-          val kinesisCredentialsProvider = new AWSCredentialsProviderChain(
-            new ProfileCredentialsProvider("composer"),
-            new Builder(contentAtomStsRoleArn, "contentAtom").build()
-          )
+    val contentAtomConfig = ContentAtomConfig(
+      contentAtomStreamName,
+      contentAtomStsRoleArn,
+      kinesisClient = {
+        val kinesisCredentialsProvider = new AWSCredentialsProviderChain(
+          new ProfileCredentialsProvider("composer"),
+          new Builder(contentAtomStsRoleArn, "contentAtom").build()
+        )
 
-          val kinesisClient = new AmazonKinesisClient(kinesisCredentialsProvider)
-          kinesisClient.setRegion(Region getRegion Regions.fromName("eu-west-1"))
-          kinesisClient
-        }
-      )
+        val kinesisClient = new AmazonKinesisClient(kinesisCredentialsProvider)
+        kinesisClient.setRegion(Region getRegion Regions.fromName("eu-west-1"))
+        kinesisClient
+      }
+    )
 
     val auxiliaryAtomStreamName = getMandatoryString("auxiliaryAtom.streamName")
     val auxiliaryAtomStsRoleArn = getMandatoryString("auxiliaryAtom.stsRoleArn")
