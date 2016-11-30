@@ -27,6 +27,20 @@ case class ParsedGameReview(
                            )
 
 object ParsedGameReview {
+  val platforms = Map(
+    "pc" -> "PC",
+    "steam" -> "Steam",
+    "ps4" -> "PS4",
+    "playstation 4" -> "PS4",
+    "xbox one" -> "Xbox One",
+    "3ds" -> "3DS",
+    "nintendo 3ds" -> "3DS",
+    "vita" -> "Vita",
+    "mac" -> "Mac",
+    "linux" -> "Linux",
+    "wii u" -> "Wii U"
+  )
+
   def toAtom(review: ParsedGameReview): Atom = {
     val gameReview = Game(
       title = review.title,
