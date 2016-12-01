@@ -3,8 +3,8 @@ package com.gu.game_review_parser
 import com.gu.contentapi.client.model.v1.Content
 import com.gu.contentapi.json.CirceDecoders._
 import com.gu.game_review_parser.parsers.StandardParser
-import com.gu.game_review_parser.utils.JsonHelpers
 import org.scalatest.{FunSuite, Matchers}
+import utils.JsonHelpers
 
 class GameReviewParserSpec extends FunSuite with Matchers {
   test("parse a standard game review") {

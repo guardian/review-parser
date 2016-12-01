@@ -1,6 +1,6 @@
 
 val AwsSdkVersion = "1.11.46"
-
+val CirceVersion = "0.5.0-M2"
 val CapiVersion = "10.14"
 
 val commonSettings = Seq(
@@ -29,16 +29,30 @@ lazy val root = (project in file("."))
 
 lazy val common = (project in file("common"))
   .settings(commonSettings)
+  .settings(
+    libraryDependencies ++= Seq(
+      "io.circe" %% "circe-core" % CirceVersion,
+      "io.circe" %% "circe-generic" % CirceVersion,
+      "io.circe" %% "circe-parser" % CirceVersion
+    )
+  )
 
 lazy val restaurants = (project in file("restaurants"))
   .dependsOn(common)
   .settings(commonSettings)
-  .settings(Seq(name := "restaurants"))
 
 lazy val games = (project in file("games"))
   .dependsOn(common)
   .settings(commonSettings)
-  .settings(Seq(name := "games"))
+
+lazy val films = (project in file("films"))
+  .dependsOn(common)
+  .settings(commonSettings)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.squareup.okhttp3" % "okhttp" % "3.4.2"
+    )
+  )
 
 initialize := {
   val _ = initialize.value
