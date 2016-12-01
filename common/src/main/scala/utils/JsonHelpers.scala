@@ -1,4 +1,4 @@
-package com.gu.game_review_parser.utils
+package utils
 
 import io.circe.{Decoder, Json}
 
