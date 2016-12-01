@@ -32,7 +32,7 @@ object StandardParser {
     parsed
   }
 
-  case class Details(publisher: Option[String],
+  private case class Details(publisher: Option[String],
                      platforms: List[String],
                      price: Option[String],
                      pegiRating: Option[Int])
@@ -91,19 +91,6 @@ object StandardParser {
   }
 
   object PlatformParser {
-    private val platforms = Map(
-      "pc" -> "PC",
-      "steam" -> "Steam",
-      "ps4" -> "PS4",
-      "playstation 4" -> "PS4",
-      "xbox one" -> "Xbox One",
-      "3ds" -> "3DS",
-      "vita" -> "Vita",
-      "mac" -> "Mac",
-      "linux" -> "Linux",
-      "wii u" -> "Wii U"
-    )
-
     def getPlatforms(text: String): List[String] = {
       val tokens = text.split(",|and|/")
       tokens.toList.flatMap(getPlatform)
@@ -115,7 +102,7 @@ object StandardParser {
         if (versionTestedIdx > -1) text.substring(0, versionTestedIdx)
         else text
       }
-      val maybePlatform = platforms.get(processed.toLowerCase.trim)
+      val maybePlatform = ParsedGameReview.platforms.get(processed.toLowerCase.trim)
       if (maybePlatform.isEmpty) println(s"Unknown platform string: $text")
       maybePlatform
     }

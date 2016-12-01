@@ -25,7 +25,7 @@ object GameReviewETL extends App {
   val config = ReviewParserConfig(stage)
 
   val tags = "tone/reviews,technology/games"
-  val showFields = "main,body,byline,creationDate,standfirst,starRating,internalComposerCode"
+  val showFields = "main,body,byline,creationDate,standfirst,starRating,internalComposerCode,publication"
 
   itemId match {
     case Some(id) =>
@@ -33,10 +33,9 @@ object GameReviewETL extends App {
         .tag(tags)
         .showFields(showFields)
 
-      GameReviewProcessor.processItemQuery(config.capiConfig.capiClient, query) match {
-        case Some(parsed) => sendAtoms(Seq(parsed))
-        case None => println(s"Failed to parse $id")
-      }
+      val parsed = GameReviewProcessor.processItemQuery(config.capiConfig.capiClient, query)
+      if (parsed.nonEmpty) sendAtoms(parsed)
+      else println(s"Failed to parse $id")
 
     case None =>
       val query = SearchQuery()

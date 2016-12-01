@@ -8,6 +8,7 @@
   "webUrl": "https://www.theguardian.com/technology/2016/feb/26/far-cry-primal-review-great-gaming-stone-age",
   "apiUrl": "https://content.guardianapis.com/technology/2016/feb/26/far-cry-primal-review-great-gaming-stone-age",
   "fields": {
+    "publication": "theguardian.com",
     "standfirst": "<p>Set in the Stone Age, this game is nothing like the previous instalments of the franchise, lacking modern weaponry and an arch-villain<br></p>",
     "byline": "Steve Boxer",
     "main": "<figure class=\"element element-image\" data-media-id=\"8f08fcb32cd5ea02ed8c6d4eed90328c9a68488f\"> <img src=\"http://media.guim.co.uk/8f08fcb32cd5ea02ed8c6d4eed90328c9a68488f/114_0_1797_1080/1000.jpg\" alt=\"Far Cry Primal is set in the Stone Age, where you can tame animals that will help you take down enemies.\" width=\"1000\" height=\"601\" class=\"gu-image\" /> <figcaption> <span class=\"element-image__caption\">Far Cry Primal is set in the Stone Age, where you can tame animals that will help you take down enemies.</span> <span class=\"element-image__credit\">Photograph: Ubisoft</span> </figcaption> </figure>",
