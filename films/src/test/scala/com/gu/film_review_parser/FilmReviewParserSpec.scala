@@ -23,7 +23,7 @@ class FilmReviewParserSpec extends FunSuite with Matchers {
       "Billy Bob Thornton returns in a belated sequel that wrings occasional snickers from a patchy script",
       "Bad Santa 2",
       "Comedy",
-      "2016",
+      2016,
       "tt1798603",
       List("Mark Waters"),
       List("Christina Hendricks", "Billy Bob Thornton", "Kathy Bates", "Brett Kelly")
