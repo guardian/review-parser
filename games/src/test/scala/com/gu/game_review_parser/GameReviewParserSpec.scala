@@ -102,4 +102,26 @@ class GameReviewParserSpec extends FunSuite with Matchers {
     parsedList(0) should be(review1)
     parsedList(1) should be(review2)
   }
+
+  test("parse an Observer article with a final sentence containing a price") {
+    val observer = JsonHelpers.decodeFromFile[Content]("games/src/test/resources/observer_3.json")
+    val parsedList = GameReviewProcessor.processContent(observer)
+
+    val expected = ParsedGameReview(
+      contentId = "technology/2016/may/23/games-roundup-review-ray-gigant-homefront-revolution-enter-gungeon",
+      internalComposerCode = "573c7528e4b0451a6f4825ca",
+      creationDate = Some(OffsetDateTime.parse("2016-05-18T13:59:04Z")),
+      publicationDate = OffsetDateTime.parse("2016-05-23T05:59:04Z"),
+      reviewer = "Alex Calvin",
+      rating = 4,
+      reviewSnippet = "It is a joy to play and although the challenge may be too much for some gamers, at only £10.99 it is a bargain",
+      title = "Enter the Gungeon",
+      publisher = None,
+      platforms = List("PS4", "PC"),
+      price = None,
+      pegiRating = Some(12),
+      genre = None)
+
+    parsedList(2) should be(expected)
+  }
 }
