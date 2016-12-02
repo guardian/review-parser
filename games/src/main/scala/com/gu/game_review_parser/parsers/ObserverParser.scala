@@ -202,7 +202,7 @@ object ObserverParser {
       //Remove the reviewer's initials at the end
       val copy = lastP.clone
       copy.select("strong").remove
-      copy.text.split("""\.""").lastOption.map(_.trim)
+      copy.text.split("""\.\s""").lastOption.map(_.trim.stripSuffix("."))
     }
   }
 }

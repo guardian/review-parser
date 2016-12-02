@@ -36,6 +36,7 @@ object ParsedGameReview {
     "3ds" -> "3DS",
     "nintendo 3ds" -> "3DS",
     "vita" -> "Vita",
+    "ps vita" -> "Vita",
     "mac" -> "Mac",
     "linux" -> "Linux",
     "wii u" -> "Wii U"
