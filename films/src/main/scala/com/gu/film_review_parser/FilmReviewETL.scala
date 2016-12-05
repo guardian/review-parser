@@ -1,7 +1,11 @@
 package com.gu.film_review_parser
 
+import java.time.OffsetDateTime
+
+import com.gu.auxiliaryatom.model.auxiliaryatomevent.v1.{AuxiliaryAtom, AuxiliaryAtomEvent, EventType => AuxiliaryAtomEventType}
 import com.gu.contentapi.client.model.{ItemQuery, SearchQuery}
-import integration.ReviewParserConfig
+import com.gu.contentatom.thrift.{ContentAtomEvent, EventType}
+import integration.{AtomPublisher, ReviewParserConfig}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -51,6 +55,14 @@ object FilmReviewETL extends App {
   config.capiConfig.capiClient.shutdown()
 
   private def sendAtoms(parsed: Seq[ParsedFilmReview]): Unit = {
-    //TODO
+    val atomEvents: Seq[(AuxiliaryAtomEvent, ContentAtomEvent)] = parsed map { review =>
+      val contentAtom = ParsedFilmReview.toAtom(review)
+      val auxiliaryAtomEvent = AuxiliaryAtomEvent(review.internalComposerCode, eventType = AuxiliaryAtomEventType.Add, Seq(AuxiliaryAtom(contentAtom.id, "review")))
+      val contentAtomEvent = ContentAtomEvent(contentAtom, EventType.Update, eventCreationTime = review.creationDate.getOrElse(OffsetDateTime.now).toInstant.toEpochMilli)
+
+      (auxiliaryAtomEvent, contentAtomEvent)
+    }
+
+    AtomPublisher.send(atomEvents)(config)
   }
 }

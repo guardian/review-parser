@@ -8,7 +8,7 @@ import io.circe.parser._
 import io.circe.generic.auto._
 
 case class OMDBData(genre: String,
-                    year: String,
+                    year: Short,
                     imdbId: String,
                     directors: List[String],
                     actors: List[String])
@@ -21,7 +21,7 @@ object OMDB {
     s"https://omdbapi.com/?t=$enc&r=json"
   }
 
-  private case class OMDBResponse(Year: String, Genre: String, Director: String, Actors: String, imdbID: String)
+  private case class OMDBResponse(Year: Short, Genre: String, Director: String, Actors: String, imdbID: String)
 
   def getData(title: String): Option[OMDBData] = {
     val request = new Request.Builder().url(buildUrl(title)).build
