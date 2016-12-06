@@ -18,7 +18,7 @@ object OMDB {
 
   private def buildUrl(title: String) = {
     val enc = URLEncoder.encode(title, "UTF-8")
-    s"https://omdbapi.com/?t=$enc&r=json"
+    s"https://omdbapi.com/?t=$enc&r=json&type=movie"
   }
 
   private case class OMDBResponse(Year: Short, Genre: String, Director: String, Actors: String, imdbID: String)
