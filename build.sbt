@@ -1,7 +1,7 @@
 
 val AwsSdkVersion = "1.11.46"
 val CirceVersion = "0.5.0-M2"
-val CapiVersion = "10.16"
+val CapiVersion = "10.17"
 
 val commonSettings = Seq(
   scalaVersion := "2.11.8",

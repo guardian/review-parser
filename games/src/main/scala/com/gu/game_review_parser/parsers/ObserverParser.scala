@@ -47,7 +47,8 @@ object ObserverParser {
             publisher = None,
             platforms = details.platforms,
             price = None,
-            pegiRating = details.pegiRating)
+            pegiRating = details.pegiRating,
+            genre = Nil)
         }
 
         parsed match {

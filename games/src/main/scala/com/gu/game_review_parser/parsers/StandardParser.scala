@@ -22,7 +22,7 @@ object StandardParser {
       body <- fields.body
       details = getDetails(body)
     } yield {
-      ParsedGameReview(content.id, internalComposerCode, creationDate, publicationDate, reviewer, starRating, reviewSnippet, title, details.publisher, details.platforms, details.price, details.pegiRating)
+      ParsedGameReview(content.id, internalComposerCode, creationDate, publicationDate, reviewer, starRating, reviewSnippet, title, details.publisher, details.platforms, details.price, details.pegiRating, genre = Nil)
     }
 
     parsed match {
