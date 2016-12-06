@@ -31,4 +31,27 @@ class FilmReviewParserSpec extends FunSuite with Matchers {
 
     parsed should be(Some(expected))
   }
+
+  test("parse a 2013 review") {
+    val content = JsonHelpers.decodeFromFile[Content]("films/src/test/resources/kill-your-darlings.json")
+    val parsed = FilmReviewParser.parseContent(content)
+
+    val expected = ParsedFilmReview(
+      "film/2013/dec/05/kill-your-darlings-review",
+      "56ad0c12e4b0af7546f71bf0",
+      Some(OffsetDateTime.parse("2013-12-04T16:22:45Z")),
+      OffsetDateTime.parse("2013-12-05T21:44Z"),
+      "Peter Bradshaw",
+      3,
+      "Daniel Radcliffe shines as Allen Ginsberg in a film that takes a deeper look at the birth of the beat generation",
+      "Kill Your Darlings",
+      List("Biography", "Drama", "History"),
+      2013,
+      "tt1311071",
+      List("John Krokidas"),
+      List("Daniel Radcliffe", "Dane DeHaan", "Michael C. Hall", "Jack Huston")
+    )
+
+    parsed should be(Some(expected))
+  }
 }
