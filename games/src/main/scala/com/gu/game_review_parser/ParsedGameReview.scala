@@ -23,7 +23,7 @@ case class ParsedGameReview(
                              platforms: List[String],
                              price: Option[String] = None,
                              pegiRating: Option[Int] = None,
-                             genre: Option[String] = None
+                             genre: List[String]
                            )
 
 object ParsedGameReview {
@@ -49,7 +49,7 @@ object ParsedGameReview {
       platforms = review.platforms,
       price = review.price.flatMap(p => PriceBuilder(p)),
       pegiRating = review.pegiRating,
-      genre = None
+      genre = Nil
     )
 
     val contentChangeDetails = ContentChangeDetails(

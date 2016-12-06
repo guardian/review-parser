@@ -7,7 +7,7 @@ import com.squareup.okhttp.{OkHttpClient, Request}
 import io.circe.parser._
 import io.circe.generic.auto._
 
-case class OMDBData(genre: String,
+case class OMDBData(genre: List[String],
                     year: Short,
                     imdbId: String,
                     directors: List[String],
@@ -34,7 +34,8 @@ object OMDB {
         }, { responseData =>
           val directors = List(responseData.Director)
           val actors = responseData.Actors.split(",").map(_.trim).toList
-          Some(OMDBData(responseData.Genre, responseData.Year, responseData.imdbID, directors, actors))
+          val genres = responseData.Genre.split(",").map(_.trim).toList
+          Some(OMDBData(genres, responseData.Year, responseData.imdbID, directors, actors))
         }
       )
     } else {

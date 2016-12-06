@@ -22,11 +22,11 @@ class FilmReviewParserSpec extends FunSuite with Matchers {
       2,
       "Billy Bob Thornton returns in a belated sequel that wrings occasional snickers from a patchy script",
       "Bad Santa 2",
-      "Comedy",
+      List("Comedy", "Crime", "Drama"),
       2016,
       "tt1798603",
       List("Mark Waters"),
-      List("Christina Hendricks", "Billy Bob Thornton", "Kathy Bates", "Brett Kelly")
+      List("Billy Bob Thornton", "Kathy Bates", "Tony Cox", "Christina Hendricks")
     )
 
     parsed should be(Some(expected))

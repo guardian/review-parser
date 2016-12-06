@@ -21,7 +21,6 @@ object FilmReviewParser {
       body <- fields.body
       omdbData <- OMDB.getData(title)
     } yield {
-      println(omdbData)
       ParsedFilmReview(content.id, internalComposerCode, creationDate, publicationDate, reviewer, starRating, reviewSnippet, title, omdbData.genre, omdbData.year, omdbData.imdbId, omdbData.directors, omdbData.actors)
     }
 
