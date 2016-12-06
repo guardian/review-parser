@@ -31,10 +31,12 @@ object FilmReviewParser {
     parsed
   }
 
-  val titlePattern = """^(.*) review ?(–|-|:).*""".r
+  val newerTitlePattern = """^(.*) review ?(–|-|:).*""".r   //since Feb 2014
+  val olderTitlePattern = """^(.*) (–|-|:) review.*""".r
   private def getTitle(text: String): Option[String] = {
     text match {
-      case titlePattern(title,_) => Some(title.trim)
+      case newerTitlePattern(title,_) => Some(title.trim)
+      case olderTitlePattern(title,_) => Some(title.trim)
       case _ => None
     }
   }
