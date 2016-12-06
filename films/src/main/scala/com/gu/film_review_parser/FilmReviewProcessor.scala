@@ -11,16 +11,14 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object FilmReviewProcessor {
 
-  def processSearchQuery(pages: Seq[Int], capiClient: GuardianContentClient, query: SearchQuery): Seq[ParsedFilmReview] = {
-    pages.flatMap { page =>
-      Thread.sleep(500)
+  def processSearchQuery(page: Int, capiClient: GuardianContentClient, query: SearchQuery): Seq[ParsedFilmReview] = {
+    Thread.sleep(500)
 
-      Try(Await.result(capiClient.getResponse(query.page(page)), 5.seconds)) match {
-        case Success(response) => response.results.flatMap(FilmReviewParser.parseContent)
-        case Failure(e) =>
-          println(s"Skipping page $page because of CAPI failure (${e.getMessage})")
-          Nil
-      }
+    Try(Await.result(capiClient.getResponse(query.page(page)), 5.seconds)) match {
+      case Success(response) => response.results.flatMap(FilmReviewParser.parseContent)
+      case Failure(e) =>
+        println(s"Skipping page $page because of CAPI failure (${e.getMessage})")
+        Nil
     }
   }
 
