@@ -44,12 +44,17 @@ object FilmReviewETL extends App {
         .showFields(showFields)
 
       val firstPage = Await.result(config.capiConfig.capiClient.getResponse(query), 5.seconds)
-      val pages = 1 to firstPage.pages
-      val parsed = FilmReviewProcessor.processSearchQuery(pages, config.capiConfig.capiClient, query)
+      val count = (1 to firstPage.pages).fold(0) { (sum, page) =>
+        val parsed = FilmReviewProcessor.processSearchQuery(page, config.capiConfig.capiClient, query)
+        sendAtoms(parsed)
 
-      println(s"Successfully parsed ${parsed.size} film reviews.")
+        val newSum = sum + parsed.length
+        println
+        println(s"Sent ${parsed.length} more film reviews, total = $newSum")
+        newSum
+      }
 
-      sendAtoms(parsed)
+      println(s"Finished processing, sent $count reviews.")
   }
 
   config.capiConfig.capiClient.shutdown()
