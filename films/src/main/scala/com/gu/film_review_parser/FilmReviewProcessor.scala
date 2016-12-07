@@ -11,23 +11,37 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object FilmReviewProcessor {
 
-  def processSearchQuery(page: Int, capiClient: GuardianContentClient, query: SearchQuery): Seq[ParsedFilmReview] = {
+  //failed items will be taken down
+  case class ParsedResults(successful: Seq[ParsedFilmReview], failed: Seq[ParsedFilmReview])
+
+  def processSearchQuery(page: Int, capiClient: GuardianContentClient, query: SearchQuery): ParsedResults = {
     Thread.sleep(500)
 
     Try(Await.result(capiClient.getResponse(query.page(page)), 5.seconds)) match {
-      case Success(response) => response.results.flatMap(FilmReviewParser.parseContent)
+      case Success(response) =>
+        response.results.foldLeft(ParsedResults(Nil,Nil)) { (results, content) =>
+          val newResults = FilmReviewParser.parseContent(content).map(parsed => results.copy(successful = results.successful :+ parsed))
+            .orElse(ParsedFilmReview.reviewForTakedown(content).map(parsed => results.copy(failed = results.failed :+ parsed)))
+
+          newResults.getOrElse(results)
+        }
       case Failure(e) =>
         println(s"Skipping page $page because of CAPI failure (${e.getMessage})")
-        Nil
+        ParsedResults(Nil,Nil)
     }
   }
 
-  def processItemQuery(capiClient: GuardianContentClient, query: ItemQuery): Option[ParsedFilmReview] = {
+  def processItemQuery(capiClient: GuardianContentClient, query: ItemQuery): ParsedResults = {
     Try(Await.result(capiClient.getResponse(query), 5.seconds)) match {
-      case Success(response) => response.content.flatMap(FilmReviewParser.parseContent)
+      case Success(response) =>
+        response.content.flatMap { content =>
+          FilmReviewParser.parseContent(content).map(parsed => ParsedResults(Seq(parsed), Nil))
+            .orElse(ParsedFilmReview.reviewForTakedown(content).map(parsed => ParsedResults(Nil, Seq(parsed))))
+        }.getOrElse(ParsedResults(Nil,Nil))
+
       case Failure(e) =>
         println(s"Skipping id ${query.id} because of CAPI failure (${e.getMessage})")
-        None
+        ParsedResults(Nil,Nil)
     }
   }
 }
