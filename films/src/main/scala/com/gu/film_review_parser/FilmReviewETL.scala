@@ -33,10 +33,12 @@ object FilmReviewETL extends App {
         .tag(tags)
         .showFields(showFields)
 
-      FilmReviewProcessor.processItemQuery(config.capiConfig.capiClient, query) match {
-        case Some(parsed) => sendAtoms(Seq(parsed))
-        case None => println(s"Failed to parse $id")
-      }
+      val parsed = FilmReviewProcessor.processItemQuery(config.capiConfig.capiClient, query)
+      if (parsed.successful.nonEmpty) println(s"Parsed $id as: ${parsed.successful}")
+
+      sendAtoms(parsed.successful, false)
+      sendAtoms(parsed.failed, true)
+
 
     case None =>
       val query = SearchQuery()
@@ -46,11 +48,12 @@ object FilmReviewETL extends App {
       val firstPage = Await.result(config.capiConfig.capiClient.getResponse(query), 5.seconds)
       val count = (1 to firstPage.pages).fold(0) { (sum, page) =>
         val parsed = FilmReviewProcessor.processSearchQuery(page, config.capiConfig.capiClient, query)
-        sendAtoms(parsed)
+        sendAtoms(parsed.successful, false)
+        sendAtoms(parsed.failed, true)
 
-        val newSum = sum + parsed.length
+        val newSum = sum + parsed.successful.length
         println
-        println(s"Sent ${parsed.length} more film reviews, total = $newSum")
+        println(s"Sent ${parsed.successful.length} more film reviews, total = $newSum")
         newSum
       }
 
@@ -59,15 +62,22 @@ object FilmReviewETL extends App {
 
   config.capiConfig.capiClient.shutdown()
 
-  private def sendAtoms(parsed: Seq[ParsedFilmReview]): Unit = {
-    val atomEvents: Seq[(AuxiliaryAtomEvent, ContentAtomEvent)] = parsed map { review =>
-      val contentAtom = ParsedFilmReview.toAtom(review)
-      val auxiliaryAtomEvent = AuxiliaryAtomEvent(review.internalComposerCode, eventType = AuxiliaryAtomEventType.Add, Seq(AuxiliaryAtom(contentAtom.id, "review")))
-      val contentAtomEvent = ContentAtomEvent(contentAtom, EventType.Update, eventCreationTime = review.creationDate.getOrElse(OffsetDateTime.now).toInstant.toEpochMilli)
+  private def sendAtoms(parsed: Seq[ParsedFilmReview], takedown: Boolean = false): Unit = {
+    if (parsed.nonEmpty) {
+      val atomEvents: Seq[(AuxiliaryAtomEvent, ContentAtomEvent)] = parsed map { review =>
+        val contentAtom = ParsedFilmReview.toAtom(review)
 
-      (auxiliaryAtomEvent, contentAtomEvent)
+        val auxEvent = if (takedown) AuxiliaryAtomEventType.Remove else AuxiliaryAtomEventType.Add
+        val auxiliaryAtomEvent = AuxiliaryAtomEvent(review.internalComposerCode, eventType = auxEvent, Seq(AuxiliaryAtom(contentAtom.id, "review")))
+
+        val atomEvent = if (takedown) EventType.Takedown else EventType.Update
+        val contentAtomEvent = ContentAtomEvent(contentAtom, atomEvent, eventCreationTime = review.creationDate.getOrElse(OffsetDateTime.now).toInstant.toEpochMilli)
+
+        (auxiliaryAtomEvent, contentAtomEvent)
+      }
+
+      println(s"Sending atoms with takedown==$takedown: $parsed")
+      AtomPublisher.send(atomEvents)(config)
     }
-
-    AtomPublisher.send(atomEvents)(config)
   }
 }

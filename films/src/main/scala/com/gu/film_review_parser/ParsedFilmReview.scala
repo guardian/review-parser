@@ -2,6 +2,7 @@ package com.gu.film_review_parser
 
 import java.time.OffsetDateTime
 
+import com.gu.contentapi.client.model.v1.Content
 import com.gu.contentatom.thrift.AtomData.Review
 import com.gu.contentatom.thrift.atom.review.{Rating, ReviewAtom, ReviewType}
 import com.gu.contentatom.thrift._
@@ -68,4 +69,27 @@ object ParsedFilmReview {
   }
 
   private def generateId(contentId: String): String = java.util.UUID.nameUUIDFromBytes(contentId.getBytes).toString
+
+  def reviewForTakedown(content: Content): Option[ParsedFilmReview] = {
+    for {
+      fields <- content.fields
+      internalComposerCode <- fields.internalComposerCode
+    } yield {
+      ParsedFilmReview(
+        contentId = content.id,
+        internalComposerCode = internalComposerCode,
+        creationDate = None,
+        publicationDate = OffsetDateTime.now,
+        reviewer = "",
+        rating = 0,
+        reviewSnippet = "",
+        title = "",
+        genre = Nil,
+        year = 0,
+        imdbId = "",
+        directors = Nil,
+        actors = Nil
+      )
+    }
+  }
 }

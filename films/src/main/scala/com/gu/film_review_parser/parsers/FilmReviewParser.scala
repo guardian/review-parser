@@ -17,7 +17,7 @@ object FilmReviewParser {
       publicationDate = content.webPublicationDate.map(time => OffsetDateTime.parse(time.iso8601)).getOrElse(OffsetDateTime.now)
       reviewer <- fields.byline
       starRating <- fields.starRating
-      reviewSnippet <- fields.standfirst.map(s => Jsoup.parse(s).text())
+      reviewSnippet <- fields.standfirst.flatMap(s => getReviewSnippet(Jsoup.parse(s).text()))
       body <- fields.body
       omdbData <- OMDB.getData(title)
     } yield {
@@ -31,13 +31,36 @@ object FilmReviewParser {
     parsed
   }
 
-  val newerTitlePattern = """^(.*) review ?(–|-|:).*""".r   //since Feb 2014
-  val olderTitlePattern = """^(.*) (–|-|:) review.*""".r
-  private def getTitle(text: String): Option[String] = {
+  /**
+    * Titanic review - astonishing
+    * Titanic review: astonishing
+    */
+  val titlePattern1 = """^((?!.*Film).*) review ?(–|-|:).*""".r
+
+  /**
+    * Titanic - review
+    * Titanic: review
+    */
+  val titlePattern2 = """^(.*) ?(–|-|:) review.*""".r
+
+  /**
+    * Film review: Titanic
+    */
+  val titlePattern3 = """^Film review: (.*)""".r
+
+  def getTitle(text: String): Option[String] = {
     text match {
-      case newerTitlePattern(title,_) => Some(title.trim)
-      case olderTitlePattern(title,_) => Some(title.trim)
+      case titlePattern1(title,_) => Some(title.trim)
+      case titlePattern2(title,_) => Some(title.trim)
+      case titlePattern3(title) => Some(title.trim)
       case _ => None
     }
+  }
+
+  //Older reviews only have the certificate in the standfirst - exclude them
+  val certificatePattern = """\([cC]ert""".r
+  def getReviewSnippet(standfirst: String): Option[String] = {
+    if (certificatePattern.findFirstIn(standfirst).isEmpty) Some(standfirst)
+    else None
   }
 }
