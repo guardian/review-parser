@@ -73,7 +73,7 @@ object ParsedGameReview {
 
     val rating = buildRating(review.rating)
 
-    val reviewAtom = ReviewAtom(ReviewType.Game, review.reviewer, rating, reviewSnippet = review.reviewSnippet, entityId = "", game = Some(gameReview))
+    val reviewAtom = ReviewAtom(ReviewType.Game, review.reviewer, rating, reviewSnippet = review.reviewSnippet, entityId = "", game = Some(gameReview), sourceArticleId = Some(review.contentId))
 
     Atom(
       id = generateId(review.contentId, review.title),

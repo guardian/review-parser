@@ -193,9 +193,9 @@ object ParsedRestaurantReview {
         geolocation = review.addressInformation.map(_.location).map(geo => Geolocation(lat = geo.latitude, lon = geo.longitude))
       )
 
-      val entityId = "" // we don't create and store entities seperately yet.
+      val entityId = "" // we don't create and store entities separately yet.
 
-      val reviewAtom = ReviewAtom(ReviewType.Restaurant, review.reviewer, rating, reviewSnippet, entityId, Some(restaurant))
+      val reviewAtom = ReviewAtom(ReviewType.Restaurant, review.reviewer, rating, reviewSnippet, entityId, Some(restaurant), sourceArticleId = Some(review.originContentId))
 
       val contentChangeDetails = ContentChangeDetails(
         created = review.creationDate map { date =>

@@ -56,7 +56,7 @@ object ParsedFilmReview {
 
     val rating = Rating(5, parsed.rating.toShort, 0)
 
-    val reviewAtom = ReviewAtom(ReviewType.Film, parsed.reviewer, rating, reviewSnippet = parsed.reviewSnippet, entityId = "", film = Some(filmReview))
+    val reviewAtom = ReviewAtom(ReviewType.Film, parsed.reviewer, rating, reviewSnippet = parsed.reviewSnippet, entityId = "", film = Some(filmReview), sourceArticleId = Some(parsed.contentId))
 
     Atom(
       id = generateId(parsed.contentId),
