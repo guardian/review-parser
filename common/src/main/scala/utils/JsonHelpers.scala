@@ -4,6 +4,7 @@ import io.circe.{Decoder, Json}
 
 import scala.io.Source._
 import io.circe.parser._
+import cats.syntax.either._
 
 object JsonHelpers {
   def loadFile(path: String): String = fromFile(path).mkString
