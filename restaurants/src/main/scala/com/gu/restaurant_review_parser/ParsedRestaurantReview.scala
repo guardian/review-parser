@@ -170,7 +170,7 @@ object ParsedRestaurantReview {
       reviewSnippet <- review.reviewSnippet.map(_.value)
       name <- review.restaurantName
     } yield {
-      val rating = Rating(ratingBreakdown.minimum, ratingBreakdown.actual, ratingBreakdown.maximum)
+      val rating = Rating(ratingBreakdown.maximum, ratingBreakdown.actual, ratingBreakdown.minimum)
 
       def addressInfoField(f: AddressInformation => Option[String]) = review.addressInformation.flatMap(f)
 
