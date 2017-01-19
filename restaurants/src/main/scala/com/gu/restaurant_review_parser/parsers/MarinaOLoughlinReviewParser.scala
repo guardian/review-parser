@@ -93,8 +93,11 @@ object MarinaOLoughlinReviewParser extends RestaurantReviewerBasedParser[MarinaO
     } yield {
       OverallRating(
         minimum = 0,
-        actual = Math.round(Seq(fRating, aRating, mRating).map(_.actual).sum / 3).toShort,
-        maximum = 10
+        actual = {
+          val actual = Math.round(Seq(fRating, aRating, mRating).map(_.actual).sum / 3).toShort
+          Math.round(actual.toDouble / 2).toShort // we divide by 2 as Marina restaurant reviews give ratings out of 10.
+        },
+        maximum = 5
       )
     }
   }
