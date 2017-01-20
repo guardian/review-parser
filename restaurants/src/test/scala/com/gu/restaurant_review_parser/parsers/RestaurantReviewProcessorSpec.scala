@@ -52,7 +52,8 @@ class RestaurantReviewProcessorSpec extends FunSuite with Matchers {
 
       review.restaurantName.get shouldBe RestaurantName("John Salt")
       review.webAddress shouldBe Some(WebAddress("http://john-salt.com/"))
-      review.ratingBreakdown shouldBe Some(OverallRating(0, 7, 10))
+      println("BREAKDOWN: " + review.ratingBreakdown)
+      review.ratingBreakdown shouldBe Some(OverallRating(0, 4, 5))
       review.publicationDate shouldBe OffsetDateTime.parse(webPublicatioDate)
       review.creationDate shouldBe Some(OffsetDateTime.parse(creationDate))
       review.address shouldBe Some(FormattedAddress("131 Upper Street, London N1, 020-7704 8955"))

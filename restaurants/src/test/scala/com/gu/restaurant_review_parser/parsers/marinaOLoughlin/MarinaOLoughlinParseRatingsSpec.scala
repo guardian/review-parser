@@ -12,7 +12,7 @@ class MarinaOLoughlinParseRatingsSpec extends FlatSpec with Matchers {
     val articleBody = ArticleBody(TestUtils.resourceToString("articles/marinaOLoughlin/lifeandstyle-2014-apr-18-timberyard-edinburgh-restaurant-review-oloughlin-marina.txt"))
     val ratingsBreakdown = MarinaOLoughlinReviewParser.guessRatingBreakdown(articleBody)
     ratingsBreakdown shouldBe
-      Some(OverallRating(minimum = 0, actual = 7, maximum = 10))
+      Some(OverallRating(minimum = 0, actual = 4, maximum = 5))
   }
 
   it should "Not extract a ratings breakdown when there isn't one" in {
