@@ -26,7 +26,8 @@ class FilmReviewParserSpec extends FunSuite with Matchers {
       2016,
       "tt1798603",
       List("Mark Waters"),
-      List("Billy Bob Thornton", "Kathy Bates", "Tony Cox", "Christina Hendricks")
+      List("Billy Bob Thornton", "Kathy Bates", "Tony Cox", "Christina Hendricks"),
+      Nil
     )
 
     parsed should be(Some(expected))
@@ -49,7 +50,8 @@ class FilmReviewParserSpec extends FunSuite with Matchers {
       2013,
       "tt1311071",
       List("John Krokidas"),
-      List("Daniel Radcliffe", "Dane DeHaan", "Michael C. Hall", "Jack Huston")
+      List("Daniel Radcliffe", "Dane DeHaan", "Michael C. Hall", "Jack Huston"),
+      Nil
     )
 
     parsed should be(Some(expected))

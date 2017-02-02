@@ -42,7 +42,8 @@ class GameReviewParserSpec extends FunSuite with Matchers {
       platforms = List("3DS"),
       price = None,
       pegiRating = Some(7),
-      genre = Nil)
+      genre = Nil,
+      images = Nil)
 
     val review2 = ParsedGameReview(
       contentId = "technology/2016/nov/28/games-reviews-roundup-pokemon-sun-moon-playstation-4-pro-mekazoo",
@@ -57,7 +58,8 @@ class GameReviewParserSpec extends FunSuite with Matchers {
       platforms = List("PC", "Mac", "PS4", "Xbox One"),
       price = None,
       pegiRating = Some(7),
-      genre = Nil)
+      genre = Nil,
+      images = Nil)
 
     parsedList.length should be(2)  //Observer articles have 3 reviews, but in this case the 2nd review is not complete
     parsedList(0) should be(review1)
@@ -81,7 +83,8 @@ class GameReviewParserSpec extends FunSuite with Matchers {
       platforms = List("PC"),
       price = None,
       pegiRating = Some(16),
-      genre = Nil)
+      genre = Nil,
+      images = Nil)
 
     val review2 = ParsedGameReview(
       contentId = "technology/2016/may/30/warhammer-total-war-valkyria-chronicles-doom-games-roundup",
@@ -96,7 +99,8 @@ class GameReviewParserSpec extends FunSuite with Matchers {
       platforms = List("PS4"),
       price = None,
       pegiRating = Some(16),
-      genre = Nil)
+      genre = Nil,
+      images = Nil)
 
     parsedList.length should be(2)
     parsedList(0) should be(review1)
@@ -120,7 +124,8 @@ class GameReviewParserSpec extends FunSuite with Matchers {
       platforms = List("PS4", "PC"),
       price = None,
       pegiRating = Some(12),
-      genre = Nil)
+      genre = Nil,
+      images = Nil)
 
     parsedList(2) should be(expected)
   }

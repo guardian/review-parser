@@ -1,11 +1,11 @@
 package com.gu.film_review_parser.parsers
 
 import java.time.OffsetDateTime
-
 import com.gu.contentapi.client.model.v1.Content
 import com.gu.film_review_parser.ParsedFilmReview
 import com.gu.film_review_parser.omdb.OMDB
 import org.jsoup.Jsoup
+import utils.ImageTransformer
 
 object FilmReviewParser {
   def parseContent(content: Content): Option[ParsedFilmReview] = {
@@ -21,7 +21,8 @@ object FilmReviewParser {
       body <- fields.body
       omdbData <- OMDB.getData(title)
     } yield {
-      ParsedFilmReview(content.id, internalComposerCode, creationDate, publicationDate, reviewer, starRating, reviewSnippet, title, omdbData.genre, omdbData.year, omdbData.imdbId, omdbData.directors, omdbData.actors)
+      val images = ImageTransformer.toAtomImages(content.elements.getOrElse(Nil))
+      ParsedFilmReview(content.id, internalComposerCode, creationDate, publicationDate, reviewer, starRating, reviewSnippet, title, omdbData.genre, omdbData.year, omdbData.imdbId, omdbData.directors, omdbData.actors, images)
     }
 
     parsed match {

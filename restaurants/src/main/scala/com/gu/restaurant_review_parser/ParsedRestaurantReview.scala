@@ -133,7 +133,8 @@ case class ParsedRestaurantReview (
                                     creationDate: Option[OffsetDateTime],
                                     reviewSnippet: Option[ReviewSnippet],
                                     originContentId: String,
-                                    internalComposerCode: Option[String]
+                                    internalComposerCode: Option[String],
+                                    images: Seq[Image]
 ) {
 
   override def toString: String = {
@@ -195,7 +196,7 @@ object ParsedRestaurantReview {
 
       val entityId = "" // we don't create and store entities separately yet.
 
-      val reviewAtom = ReviewAtom(ReviewType.Restaurant, review.reviewer, rating, reviewSnippet, entityId, Some(restaurant), sourceArticleId = Some(review.originContentId))
+      val reviewAtom = ReviewAtom(ReviewType.Restaurant, review.reviewer, rating, reviewSnippet, entityId, Some(restaurant), sourceArticleId = Some(review.originContentId), images = Some(review.images))
 
       val contentChangeDetails = ContentChangeDetails(
         created = review.creationDate map { date =>

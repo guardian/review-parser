@@ -32,6 +32,7 @@ object FilmReviewETL extends App {
       val query = ItemQuery(id)
         .tag(tags)
         .showFields(showFields)
+        .showElements("image")
 
       val parsed = FilmReviewProcessor.processItemQuery(config.capiConfig.capiClient, query)
       if (parsed.successful.nonEmpty) println(s"Parsed $id as: ${parsed.successful}")
@@ -44,6 +45,7 @@ object FilmReviewETL extends App {
       val query = SearchQuery()
         .tag(tags)
         .showFields(showFields)
+        .showElements("image")
 
       val firstPage = Await.result(config.capiConfig.capiClient.getResponse(query), 5.seconds)
       val count = (1 to firstPage.pages).fold(0) { (sum, page) =>

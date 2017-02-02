@@ -32,6 +32,7 @@ object GameReviewETL extends App {
       val query = ItemQuery(id)
         .tag(tags)
         .showFields(showFields)
+          .showElements("image")
 
       val parsed = GameReviewProcessor.processItemQuery(config.capiConfig.capiClient, query)
       if (parsed.nonEmpty) sendAtoms(parsed)
@@ -41,6 +42,7 @@ object GameReviewETL extends App {
       val query = SearchQuery()
         .tag(tags)
         .showFields(showFields)
+        .showElements("image")
 
       val firstPage = Await.result(config.capiConfig.capiClient.getResponse(query), 5.seconds)
       val pages = 1 to firstPage.pages

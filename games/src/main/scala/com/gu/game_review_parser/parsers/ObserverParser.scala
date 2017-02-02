@@ -6,6 +6,7 @@ import com.gu.contentapi.client.model.v1.Content
 import com.gu.game_review_parser.ParsedGameReview
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
+import utils.ImageTransformer
 
 import scala.collection.JavaConverters._
 import scala.util.Try
@@ -48,7 +49,8 @@ object ObserverParser {
             platforms = details.platforms,
             price = None,
             pegiRating = details.pegiRating,
-            genre = Nil)
+            genre = Nil,
+            images = ImageTransformer.toAtomImages(content.elements.getOrElse(Nil)))
         }
 
         parsed match {
