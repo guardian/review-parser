@@ -5,6 +5,7 @@ import java.time.OffsetDateTime
 import com.gu.contentapi.client.model.v1.Content
 import com.gu.game_review_parser.ParsedGameReview
 import org.jsoup.Jsoup
+import utils.ImageTransformer
 
 import scala.util.Try
 
@@ -22,7 +23,8 @@ object StandardParser {
       body <- fields.body
       details = getDetails(body)
     } yield {
-      ParsedGameReview(content.id, internalComposerCode, creationDate, publicationDate, reviewer, starRating, reviewSnippet, title, details.publisher, details.platforms, details.price, details.pegiRating, genre = Nil)
+      val images = ImageTransformer.toAtomImages(content.elements.getOrElse(Nil))
+      ParsedGameReview(content.id, internalComposerCode, creationDate, publicationDate, reviewer, starRating, reviewSnippet, title, details.publisher, details.platforms, details.price, details.pegiRating, genre = Nil, images = images)
     }
 
     parsed match {

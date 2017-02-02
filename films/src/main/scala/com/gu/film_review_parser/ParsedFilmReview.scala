@@ -21,7 +21,8 @@ case class ParsedFilmReview(contentId: String,
                             year: Short,
                             imdbId: String,
                             directors: List[String],
-                            actors: List[String]
+                            actors: List[String],
+                            images: Seq[Image]
                            )
 
 object ParsedFilmReview {
@@ -56,7 +57,7 @@ object ParsedFilmReview {
 
     val rating = Rating(5, parsed.rating.toShort, 0)
 
-    val reviewAtom = ReviewAtom(ReviewType.Film, parsed.reviewer, rating, reviewSnippet = parsed.reviewSnippet, entityId = "", film = Some(filmReview), sourceArticleId = Some(parsed.contentId))
+    val reviewAtom = ReviewAtom(ReviewType.Film, parsed.reviewer, rating, reviewSnippet = parsed.reviewSnippet, entityId = "", film = Some(filmReview), sourceArticleId = Some(parsed.contentId), images = Some(parsed.images))
 
     Atom(
       id = generateId(parsed.contentId),
@@ -88,7 +89,8 @@ object ParsedFilmReview {
         year = 0,
         imdbId = "",
         directors = Nil,
-        actors = Nil
+        actors = Nil,
+        images = Nil
       )
     }
   }

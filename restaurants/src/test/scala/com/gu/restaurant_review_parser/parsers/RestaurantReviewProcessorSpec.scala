@@ -23,7 +23,8 @@ class RestaurantReviewProcessorSpec extends FunSuite with Matchers {
         webPublicationDate = Some(CapiDateTime(OffsetDateTime.parse(webPublicatioDate).toInstant.toEpochMilli, webPublicatioDate)),
         creationDate = Some(CapiDateTime(OffsetDateTime.parse(creationDate).toInstant.toEpochMilli, creationDate)),
         standfirst = Some("As everyone in the room applies tongues to bricks, all I think is, someone's having a laugh"),
-        internalComposerCode = Some("5829bef2f7d050b15a62881c")
+        internalComposerCode = Some("5829bef2f7d050b15a62881c"),
+        elements = Nil
       )
     )
 

@@ -1,9 +1,11 @@
 package com.gu.restaurant_review_parser
 
-import com.google.maps.model.{GeocodingResult}
+import com.google.maps.model.GeocodingResult
 import com.gu.contentapi.client.GuardianContentClient
-import com.gu.contentapi.client.model.v1.SearchResponse
+import com.gu.contentapi.client.model.v1.{Asset, Element, SearchResponse}
+import com.gu.contentatom.thrift.{Image, ImageAsset, ImageAssetDimensions}
 import com.gu.restaurant_review_parser.parsers.Parser.RestaurantReviewerBasedParser
+import utils.ImageTransformer
 
 import scala.concurrent.duration._
 import scala.concurrent.Await
@@ -99,7 +101,8 @@ object RestaurantReviewProcessor {
       creationDate = extractor.creationDate(article.creationDate),
       reviewSnippet = extractor.guessReviewSnippet(maybeStandfirst),
       originContentId = article.id,
-      internalComposerCode = article.internalComposerCode
+      internalComposerCode = article.internalComposerCode,
+      images = ImageTransformer.toAtomImages(article.elements)
     )
 
     parsedRestaurantReview

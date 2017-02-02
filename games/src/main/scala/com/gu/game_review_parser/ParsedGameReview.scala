@@ -23,7 +23,8 @@ case class ParsedGameReview(
                              platforms: List[String],
                              price: Option[String] = None,
                              pegiRating: Option[Int] = None,
-                             genre: List[String]
+                             genre: List[String],
+                             images: Seq[Image]
                            )
 
 object ParsedGameReview {
@@ -73,7 +74,7 @@ object ParsedGameReview {
 
     val rating = buildRating(review.rating)
 
-    val reviewAtom = ReviewAtom(ReviewType.Game, review.reviewer, rating, reviewSnippet = review.reviewSnippet, entityId = "", game = Some(gameReview), sourceArticleId = Some(review.contentId))
+    val reviewAtom = ReviewAtom(ReviewType.Game, review.reviewer, rating, reviewSnippet = review.reviewSnippet, entityId = "", game = Some(gameReview), sourceArticleId = Some(review.contentId), images = Some(review.images))
 
     Atom(
       id = generateId(review.contentId, review.title),
