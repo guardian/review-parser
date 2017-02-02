@@ -12,7 +12,7 @@ class MarinaOLoughlinParseAddressSpec extends FlatSpec with Matchers {
     val articleBody = ArticleBody(TestUtils.resourceToString("articles/marinaOLoughlin/lifeandstyle-2012-dec-07-john-salt-london-restaurant-review.txt"))
     val restaurantName = RestaurantName("John Salt")
     val address = MarinaOLoughlinReviewParser.guessFormattedAddress(articleBody, restaurantName)
-    address shouldBe Some(FormattedAddress("131 Upper Street, London N1, 020-7704 8955"))
+    address shouldBe Some(FormattedAddress("131 Upper Street, London N1"))
   }
 
   it should "extract the restaurant information" in {
@@ -26,7 +26,7 @@ class MarinaOLoughlinParseAddressSpec extends FlatSpec with Matchers {
     val articleBody = ArticleBody(TestUtils.resourceToString("articles/marinaOLoughlin/lifeandstyle-2012-nov-02-the-table-cafe-london-review.txt"))
     val restaurantName = RestaurantName("The Table Cafe")
     val address = MarinaOLoughlinReviewParser.guessFormattedAddress(articleBody, restaurantName)
-    address shouldBe Some(FormattedAddress("83 Southwark Street, London SE1, 020-7401 2760"))
+    address shouldBe Some(FormattedAddress("83 Southwark Street, London SE1"))
   }
 
   it should "extract the restaurant information (2)" in {

@@ -6,7 +6,10 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import com.gu.restaurant_review_parser.parsers.Delimiters._
 import com.gu.restaurant_review_parser.parsers.Rules.{PrefixRule, Rule, SuffixRule}
+import utils.PhoneNumberRegexes
+
 import scala.collection.JavaConverters._
+import scala.util.matching.Regex
 
 
 object MarinaOLoughlinReviewParser extends RestaurantReviewerBasedParser[MarinaOLoughlinReviewArticle] {
@@ -103,8 +106,16 @@ object MarinaOLoughlinReviewParser extends RestaurantReviewerBasedParser[MarinaO
   }
 
   def guessFormattedAddress(articleBody: ArticleBody, restaurantName: RestaurantName): Option[FormattedAddress] = {
-    getAddressBlockText(articleBody, restaurantName).flatMap { addressBlockText =>
-      addressBlockText.split(DotSpaceDelimiter, 2).headOption.map(FormattedAddress)
+    for {
+      addressBlockText <- getAddressBlockText(articleBody, restaurantName)
+      addr <- addressBlockText.split(DotSpaceDelimiter, 2).headOption
+      matchPhoneNumber <- PhoneNumberRegexes.regexes.find(regex => regex.pattern.matcher(addr).matches)
+    } yield {
+      addr match {
+        // TODO: If we decide we would like the telephone number in the model in the future here is where it is exctracted.
+        case matchPhoneNumber(num) => FormattedAddress(addr.replace(num, "").trim.stripSuffix(CommaDelimiter))
+        case _ => FormattedAddress(addr)
+      }
     }
   }
 
