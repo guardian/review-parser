@@ -1,9 +1,9 @@
 package com.gu.film_review_parser.omdb
 
 import java.net.URLEncoder
+import java.util.concurrent.TimeUnit
 
 import com.squareup.okhttp.{OkHttpClient, Request}
-
 import io.circe.parser._
 import io.circe.generic.auto._
 
@@ -15,6 +15,8 @@ case class OMDBData(genre: List[String],
 
 object OMDB {
   private val httpClient: OkHttpClient = new OkHttpClient()
+  httpClient.setConnectTimeout(60, TimeUnit.SECONDS)
+  httpClient.setReadTimeout(60, TimeUnit.SECONDS)
 
   private def buildUrl(title: String) = {
     val enc = URLEncoder.encode(title, "UTF-8")
