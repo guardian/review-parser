@@ -6,6 +6,8 @@ import com.gu.auxiliaryatom.model.auxiliaryatomevent.v1.{AuxiliaryAtom, Auxiliar
 import com.gu.contentapi.client.model.{ItemQuery, SearchQuery}
 import com.gu.contentatom.thrift.{ContentAtomEvent, EventType}
 import integration.{AtomPublisher, ReviewParserConfig}
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -24,8 +26,9 @@ object FilmReviewETL extends App {
 
   val config = ReviewParserConfig(stage)
 
-  val tags = "tone/reviews,film/film"
+  val tags = "tone/reviews,film/film,-film/dvdreviews"
   val showFields = "main,body,byline,creationDate,standfirst,starRating,internalComposerCode"
+  val cutOff = DateTime.parse("20100101", DateTimeFormat.forPattern("YYYYMMdd"))
 
   itemId match {
     case Some(id) =>
@@ -46,6 +49,7 @@ object FilmReviewETL extends App {
         .tag(tags)
         .showFields(showFields)
         .showElements("image")
+        .fromDate(cutOff)
 
       val firstPage = Await.result(config.capiConfig.capiClient.getResponse(query), 5.seconds)
       val count = (1 to firstPage.pages).fold(0) { (sum, page) =>

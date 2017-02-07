@@ -12,6 +12,8 @@ val commonSettings = Seq(
   resolvers += "Guardian GitHub Repository" at "http://guardian.github.io/maven/repo-releases",
   resolvers += Resolver.sonatypeRepo("releases"),
   libraryDependencies ++= Seq(
+    "joda-time" % "joda-time" % "2.9.4",
+    "org.joda" % "joda-convert" % "1.8.1",
     "org.jsoup" % "jsoup" % "1.9.2",
     "com.typesafe" % "config" % "1.3.1",
     "com.gu" %% "content-api-client" % CapiVersion,
