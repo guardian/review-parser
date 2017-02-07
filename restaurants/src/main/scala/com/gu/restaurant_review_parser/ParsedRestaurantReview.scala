@@ -85,7 +85,7 @@ object AddressParts {
       administrativeAreaLevelTwo = addressParts.collectFirst { case a2: AdministrativeAreaLevelTwo => a2 }
     )
 
-    if (addrParts.route.nonEmpty && addrParts.locality.nonEmpty)
+    if (addrParts.route.nonEmpty && (addrParts.postalTown.nonEmpty || addrParts.administrativeAreaLevelTwo.nonEmpty))
       Some(addrParts)
     else None
 
