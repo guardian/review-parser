@@ -6,6 +6,8 @@ import com.gu.contentapi.client.model.{ItemQuery, SearchQuery}
 import com.gu.contentatom.thrift.{ContentAtomEvent, EventType}
 import com.gu.auxiliaryatom.model.auxiliaryatomevent.v1.{AuxiliaryAtom, AuxiliaryAtomEvent, EventType => AuxiliaryAtomEventType}
 import integration.{AtomPublisher, ReviewParserConfig}
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -26,16 +28,21 @@ object GameReviewETL extends App {
 
   val tags = "tone/reviews,technology/games"
   val showFields = "main,body,byline,creationDate,standfirst,starRating,internalComposerCode,publication"
+  val cutOff = DateTime.parse("20140101", DateTimeFormat.forPattern("YYYYMMdd"))
 
   itemId match {
     case Some(id) =>
       val query = ItemQuery(id)
         .tag(tags)
         .showFields(showFields)
-          .showElements("image")
+        .showElements("image")
+        .fromDate(cutOff)
 
       val parsed = GameReviewProcessor.processItemQuery(config.capiConfig.capiClient, query)
-      if (parsed.nonEmpty) sendAtoms(parsed)
+      if (parsed.nonEmpty) {
+        parsed.foreach(p => println(s"Successfully parsed: $p"))
+        sendAtoms(parsed)
+      }
       else println(s"Failed to parse $id")
 
     case None =>
@@ -43,6 +50,7 @@ object GameReviewETL extends App {
         .tag(tags)
         .showFields(showFields)
         .showElements("image")
+        .fromDate(cutOff)
 
       val firstPage = Await.result(config.capiConfig.capiClient.getResponse(query), 5.seconds)
       val pages = 1 to firstPage.pages
