@@ -1,7 +1,7 @@
 
 val AwsSdkVersion = "1.11.46"
 val CirceVersion = "0.6.1"
-val CapiVersion = "11.1"
+val CapiVersion = "11.14"
 
 val commonSettings = Seq(
   scalaVersion := "2.11.8",
@@ -19,7 +19,7 @@ val commonSettings = Seq(
     "com.gu" %% "content-api-client" % CapiVersion,
     "com.amazonaws" % "aws-java-sdk-sts" % AwsSdkVersion,
     "com.amazonaws" % "aws-java-sdk-kinesis" % AwsSdkVersion,
-    "com.google.maps" % "google-maps-services" % "0.1.16",
+    "com.google.maps" % "google-maps-services" % "0.1.20",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
     "com.gu" % "content-api-models-json" % CapiVersion % Test,
     "org.scalatest" %% "scalatest" % "2.2.6" % Test
