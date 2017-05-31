@@ -8,20 +8,24 @@ import io.circe.parser._
 import io.circe.generic.auto._
 import cats.syntax.either._
 
+trait OMDB {
+  def getData(title: String): Option[OMDBData]
+}
+
 case class OMDBData(genre: List[String],
                     year: Short,
                     imdbId: String,
                     directors: List[String],
                     actors: List[String])
 
-object OMDB {
+class OMDBImpl(omdbKey: String) extends OMDB {
   private val httpClient: OkHttpClient = new OkHttpClient()
   httpClient.setConnectTimeout(60, TimeUnit.SECONDS)
   httpClient.setReadTimeout(60, TimeUnit.SECONDS)
 
   private def buildUrl(title: String) = {
     val enc = URLEncoder.encode(title, "UTF-8")
-    s"https://omdbapi.com/?t=$enc&r=json&type=movie"
+    s"https://omdbapi.com/?t=$enc&r=json&type=movie&apikey=$omdbKey"
   }
 
   private case class OMDBResponse(Year: Short, Genre: String, Director: String, Actors: String, imdbID: String)

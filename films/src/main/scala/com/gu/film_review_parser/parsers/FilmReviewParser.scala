@@ -8,7 +8,7 @@ import org.jsoup.Jsoup
 import utils.ImageTransformer
 
 object FilmReviewParser {
-  def parseContent(content: Content): Option[ParsedFilmReview] = {
+  def parseContent(content: Content, omdb: OMDB): Option[ParsedFilmReview] = {
     val parsed = for {
       title <- getTitle(content.webTitle)
       fields <- content.fields
@@ -19,7 +19,7 @@ object FilmReviewParser {
       starRating <- fields.starRating
       reviewSnippet <- fields.standfirst.flatMap(s => getReviewSnippet(Jsoup.parse(s).text()))
       body <- fields.body
-      omdbData <- OMDB.getData(title)
+      omdbData <- omdb.getData(title)
     } yield {
       val images = ImageTransformer.toAtomImages(content.elements.getOrElse(Nil))
       ParsedFilmReview(content.id, internalComposerCode, creationDate, publicationDate, reviewer, starRating, reviewSnippet, title, omdbData.genre, omdbData.year, omdbData.imdbId, omdbData.directors, omdbData.actors, images)

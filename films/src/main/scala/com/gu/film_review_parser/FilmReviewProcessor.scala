@@ -2,6 +2,7 @@ package com.gu.film_review_parser
 
 import com.gu.contentapi.client.GuardianContentClient
 import com.gu.contentapi.client.model.{ItemQuery, SearchQuery}
+import com.gu.film_review_parser.omdb.OMDB
 import com.gu.film_review_parser.parsers.FilmReviewParser
 
 import scala.concurrent.Await
@@ -14,13 +15,13 @@ object FilmReviewProcessor {
   //failed items will be taken down
   case class ParsedResults(successful: Seq[ParsedFilmReview], failed: Seq[ParsedFilmReview])
 
-  def processSearchQuery(page: Int, capiClient: GuardianContentClient, query: SearchQuery): ParsedResults = {
+  def processSearchQuery(page: Int, capiClient: GuardianContentClient, query: SearchQuery, omdb: OMDB): ParsedResults = {
     Thread.sleep(500)
 
     Try(Await.result(capiClient.getResponse(query.page(page)), 5.seconds)) match {
       case Success(response) =>
         response.results.foldLeft(ParsedResults(Nil,Nil)) { (results, content) =>
-          val newResults = FilmReviewParser.parseContent(content).map(parsed => results.copy(successful = results.successful :+ parsed))
+          val newResults = FilmReviewParser.parseContent(content, omdb).map(parsed => results.copy(successful = results.successful :+ parsed))
             .orElse(ParsedFilmReview.reviewForTakedown(content).map(parsed => results.copy(failed = results.failed :+ parsed)))
 
           newResults.getOrElse(results)
@@ -31,11 +32,11 @@ object FilmReviewProcessor {
     }
   }
 
-  def processItemQuery(capiClient: GuardianContentClient, query: ItemQuery): ParsedResults = {
+  def processItemQuery(capiClient: GuardianContentClient, query: ItemQuery, omdb: OMDB): ParsedResults = {
     Try(Await.result(capiClient.getResponse(query), 5.seconds)) match {
       case Success(response) =>
         response.content.flatMap { content =>
-          FilmReviewParser.parseContent(content).map(parsed => ParsedResults(Seq(parsed), Nil))
+          FilmReviewParser.parseContent(content, omdb).map(parsed => ParsedResults(Seq(parsed), Nil))
             .orElse(ParsedFilmReview.reviewForTakedown(content).map(parsed => ParsedResults(Nil, Seq(parsed))))
         }.getOrElse(ParsedResults(Nil,Nil))
 
