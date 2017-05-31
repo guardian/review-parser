@@ -5,6 +5,7 @@ import java.time.OffsetDateTime
 import com.gu.auxiliaryatom.model.auxiliaryatomevent.v1.{AuxiliaryAtom, AuxiliaryAtomEvent, EventType => AuxiliaryAtomEventType}
 import com.gu.contentapi.client.model.{ItemQuery, SearchQuery}
 import com.gu.contentatom.thrift.{ContentAtomEvent, EventType}
+import com.gu.film_review_parser.omdb.OMDBImpl
 import integration.{AtomPublisher, ReviewParserConfig}
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
@@ -16,15 +17,17 @@ import scala.concurrent.ExecutionContext.Implicits.global
 object FilmReviewETL extends App {
 
   if (args.isEmpty) {
-    Console.err.println("Usage: <CODE|PROD> [<content id>]")
+    Console.err.println("Usage: <CODE|PROD> <omdb api key> [<content id>]")
     Console.err.println("If a content id is not supplied, searches for all film reviews")
     sys.exit(1)
   }
 
   val stage: String = args(0)
-  val itemId: Option[String] = args.lift(1)
+  val omdbKey: String = args(1)
+  val itemId: Option[String] = args.lift(2)
 
   val config = ReviewParserConfig(stage)
+  val omdb = new OMDBImpl(omdbKey)
 
   val tags = "tone/reviews,film/film,-film/dvdreviews"
   val showFields = "main,body,byline,creationDate,standfirst,starRating,internalComposerCode"
@@ -37,7 +40,7 @@ object FilmReviewETL extends App {
         .showFields(showFields)
         .showElements("image")
 
-      val parsed = FilmReviewProcessor.processItemQuery(config.capiConfig.capiClient, query)
+      val parsed = FilmReviewProcessor.processItemQuery(config.capiConfig.capiClient, query, omdb)
       if (parsed.successful.nonEmpty) println(s"Parsed $id as: ${parsed.successful}")
 
       sendAtoms(parsed.successful, false)
@@ -53,7 +56,7 @@ object FilmReviewETL extends App {
 
       val firstPage = Await.result(config.capiConfig.capiClient.getResponse(query), 5.seconds)
       val count = (1 to firstPage.pages).fold(0) { (sum, page) =>
-        val parsed = FilmReviewProcessor.processSearchQuery(page, config.capiConfig.capiClient, query)
+        val parsed = FilmReviewProcessor.processSearchQuery(page, config.capiConfig.capiClient, query, omdb)
         sendAtoms(parsed.successful, false)
         sendAtoms(parsed.failed, true)
 
