@@ -8,8 +8,9 @@ to CODE or PROD.
 3. Run
 
 ```
-$ sbt "games/run <stage>"
-$ sbt "restraunts/run <stage> <api-key> <MARINA|JAY>"
+$ sbt "games/run <stage> [<content-id>]"
+$ sbt "films/run <stage> <omdb api-key> [<content-id>]"
+$ sbt "restraunts/run <stage> <google maps api-key> <MARINA|JAY>"
 ```
-
+For games and films, leave out the optional `content-id` param for a full reindex.
 
