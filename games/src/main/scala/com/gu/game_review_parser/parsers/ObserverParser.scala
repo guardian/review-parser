@@ -191,17 +191,19 @@ object ObserverParser {
     * Use the last sentence of the review as the reviewSnippet
     */
   private def getLastSentence(topP: Element): Option[String] = {
-    //Get last non-empty <p> before next element which is not <p>
-    def getLastP(p: Element): Option[Element] = {
-      Option(p.nextElementSibling) match {
+    //Get last non-empty <p> before next <h2> or end
+    def getLastP(current: Element, lastP: Element): Option[Element] = {
+      Option(current.nextElementSibling) match {
         case Some(next) =>
-          if (next.tagName == "p" && next.text.nonEmpty) getLastP(next)
-          else Some(p)
-        case None => Some(p)
+          if (next.tagName == "h2") if (!lastP.equals(topP)) Some(lastP) else None
+          else {
+            getLastP(next, if (next.tagName == "p" && next.text.nonEmpty) next else lastP)
+          }
+        case None => if (!lastP.equals(topP)) Some(lastP) else None
       }
     }
 
-    getLastP(topP).flatMap { lastP: Element =>
+    getLastP(topP, topP).flatMap { lastP: Element =>
       //Remove the reviewer's initials at the end
       val copy = lastP.clone
       copy.select("strong").remove

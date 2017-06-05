@@ -21,10 +21,10 @@ object StandardParser {
       starRating <- fields.starRating
       reviewSnippet <- fields.standfirst.map(s => Jsoup.parse(s).text())
       body <- fields.body
-      details = getDetails(body)
+      details <- getDetails(body)
     } yield {
       val images = ImageTransformer.toAtomImages(content.elements.getOrElse(Nil))
-      ParsedGameReview(content.id, internalComposerCode, creationDate, publicationDate, reviewer, starRating, reviewSnippet, title, details.publisher, details.platforms, details.price, details.pegiRating, genre = Nil, images = images)
+      ParsedGameReview(content.id, internalComposerCode, creationDate, publicationDate, reviewer, starRating, reviewSnippet, title, Some(details.publisher), details.platforms, Some(details.price), details.pegiRating, genre = Nil, images = images)
     }
 
     parsed match {
@@ -34,14 +34,14 @@ object StandardParser {
     parsed
   }
 
-  private case class Details(publisher: Option[String],
+  private case class Details(publisher: String,
                      platforms: List[String],
-                     price: Option[String],
+                     price: String,
                      pegiRating: Option[Int])
 
-  private def getDetails(body: String): Details = {
+  private def getDetails(body: String): Option[Details] = {
     val doc = Jsoup.parse(body)
-    Option(doc.select("p > strong").first) map { details =>
+    Option(doc.select("p > strong").first) flatMap  { details =>
 
       val detailsString = details.html
       val tokens = detailsString.split(";")
@@ -62,12 +62,13 @@ object StandardParser {
         *
         * - PegiRating begins "Pegi rating:" and may end with a "+"
         */
-      val publisher = tokens.headOption
-      val platforms = tokens.lift(1).map(platformsString => PlatformParser.getPlatforms(platformsString)).getOrElse(Nil)
-      val price = tokens.lift(2).flatMap(getPrice)
-      val pegiRating = tokens.lift(3).flatMap(getPegiRating)
-      Details(publisher, platforms, price, pegiRating)
-    } getOrElse Details(publisher = None, platforms = Nil, price = None, pegiRating = None)
+      for {
+        publisher <- tokens.headOption
+        platforms = tokens.lift(1).map(platformsString => PlatformParser.getPlatforms(platformsString)).getOrElse(Nil)
+        price <- tokens.lift(2).flatMap(getPrice)
+        pegiRating = tokens.lift(3).flatMap(getPegiRating)
+      } yield Details(publisher, platforms, price, pegiRating)
+    }
   }
 
   val titlePattern = """^(.*) review ?(–|-|:).*""".r
@@ -84,10 +85,10 @@ object StandardParser {
     else None
   }
 
-  val pegiRatingPattern = """Pegi rating: (\d{1,2})\+?""".r
+  val pegiRatingPattern = """pegi (rating: )?(\d{1,2})\+?""".r
   private def getPegiRating(text: String): Option[Int] = {
-    text.trim match {
-      case pegiRatingPattern(age) => Try(age.toInt).toOption
+    text.trim.toLowerCase match {
+      case pegiRatingPattern(_, age) => Try(age.toInt).toOption
       case _ => None
     }
   }
